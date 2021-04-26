@@ -16,13 +16,15 @@
 #include <mutex>  // NOLINT
 #include <vector>
 
+#include <hash_map>
+
 #include "buffer/replacer.h"
 #include "common/config.h"
-
+using namespace std;
 namespace bustub {
 
 /**
- * LRUReplacer implements the lru replacement policy, which approximates the Least Recently Used policy.
+ * LRUReplacer implements -+the lru replacement policy, which approximates the Least Recently Used policy.
  */
 class LRUReplacer : public Replacer {
  public:
@@ -46,6 +48,10 @@ class LRUReplacer : public Replacer {
   size_t Size() override;
 
  private:
+  int num_pages;
+  vector<int> temp;
+  
+
   // TODO(student): implement me!
 };
 

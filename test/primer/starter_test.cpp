@@ -22,7 +22,7 @@ TEST(StarterTest, SampleTest) {
   EXPECT_EQ(a, 1);
 }
 
-TEST(StarterTest, DISABLED_AddMatricesTest) {
+TEST(StarterTest, AddMatricesTest) {
   std::unique_ptr<RowMatrix<int>> mat1_ptr{new RowMatrix<int>(3, 3)};
   int arr1[9] = {1, 4, 2, 5, 2, -1, 0, 3, 1};
   mat1_ptr->MatImport(&arr1[0]);
@@ -48,13 +48,15 @@ TEST(StarterTest, DISABLED_AddMatricesTest) {
       EXPECT_EQ(arr3[i * 3 + j], sum_ptr->GetElem(i, j));
     }
   }
+
 }
 
-TEST(StarterTest, DISABLED_MultiplyMatricesTest) {
+TEST(StarterTest, MultiplyMatricesTest) {
   // Multiply
   int arr1[6] = {1, 2, 3, 4, 5, 6};
   std::unique_ptr<RowMatrix<int>> mat1_ptr{new RowMatrix<int>(2, 3)};
   mat1_ptr->MatImport(&arr1[0]);
+
   for (int i = 0; i < 2; i++) {
     for (int j = 0; j < 3; j++) {
       EXPECT_EQ(arr1[i * 3 + j], mat1_ptr->GetElem(i, j));

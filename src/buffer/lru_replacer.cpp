@@ -14,7 +14,9 @@
 
 namespace bustub {
 
-LRUReplacer::LRUReplacer(size_t num_pages) {}
+LRUReplacer::LRUReplacer(size_t num_pages) {
+  this->num_pages=num_pages;
+}
 
 LRUReplacer::~LRUReplacer() = default;
 
@@ -24,6 +26,6 @@ void LRUReplacer::Pin(frame_id_t frame_id) {}
 
 void LRUReplacer::Unpin(frame_id_t frame_id) {}
 
-size_t LRUReplacer::Size() { return 0; }
+size_t LRUReplacer::Size() {return  num_pages;}
 
 }  // namespace bustub
