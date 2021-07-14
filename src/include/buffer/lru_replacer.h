@@ -12,12 +12,8 @@
 
 #pragma once
 
-#include <list>
 #include <mutex>  // NOLINT
-#include <vector>
-
-#include <hash_map>
-
+#include <unordered_map>
 #include "buffer/replacer.h"
 #include "common/config.h"
 using namespace std;
@@ -26,6 +22,11 @@ namespace bustub {
 /**
  * LRUReplacer implements -+the lru replacement policy, which approximates the Least Recently Used policy.
  */
+struct Node{
+  Node* next;
+  Node* prev;
+  int val;
+};
 class LRUReplacer : public Replacer {
  public:
   /**
@@ -49,8 +50,10 @@ class LRUReplacer : public Replacer {
 
  private:
   int num_pages;
-  vector<int> temp;
-  
+  int size;
+  Node* first;
+  Node* end;
+  unordered_map<int,Node*> map;
 
   // TODO(student): implement me!
 };

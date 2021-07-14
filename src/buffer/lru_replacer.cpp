@@ -15,12 +15,23 @@
 namespace bustub {
 
 LRUReplacer::LRUReplacer(size_t num_pages) {
-  this->num_pages=num_pages;
+  this->num_pages=num_pages;//capa
+  this->size=0;
+  first->next=end;
+  end->prev=first;
+  first->prev=NULL;
+  end->next=NULL;
+
 }
 
 LRUReplacer::~LRUReplacer() = default;
 
-bool LRUReplacer::Victim(frame_id_t *frame_id) { return false; }
+bool LRUReplacer::Victim(frame_id_t *frame_id) {
+  if (num_pages==0){
+    return false;
+  }
+  return true;
+}
 
 void LRUReplacer::Pin(frame_id_t frame_id) {}
 
