@@ -48,7 +48,6 @@ TEST(StarterTest, AddMatricesTest) {
       EXPECT_EQ(arr3[i * 3 + j], sum_ptr->GetElem(i, j));
     }
   }
-
 }
 
 TEST(StarterTest, MultiplyMatricesTest) {

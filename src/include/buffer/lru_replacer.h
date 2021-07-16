@@ -16,16 +16,15 @@
 #include <unordered_map>
 #include "buffer/replacer.h"
 #include "common/config.h"
-using namespace std;
 namespace bustub {
 
 /**
  * LRUReplacer implements -+the lru replacement policy, which approximates the Least Recently Used policy.
  */
-struct Node{
-  Node* next;
-  Node* prev;
-  int val;
+struct Node {
+  Node *next;
+  Node *prev;
+  frame_id_t val;
 };
 class LRUReplacer : public Replacer {
  public:
@@ -51,9 +50,9 @@ class LRUReplacer : public Replacer {
  private:
   int num_pages;
   int size;
-  Node* first;
-  Node* end;
-  unordered_map<int,Node*> map;
+  Node *first;
+  Node *end;
+  std::unordered_map<frame_id_t,Node *> mapIn;
 
   // TODO(student): implement me!
 };
