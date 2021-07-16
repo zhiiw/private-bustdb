@@ -42,6 +42,19 @@ Page *BufferPoolManager::FetchPageImpl(page_id_t page_id) {
   // 2.     If R is dirty, write it back to the disk.
   // 3.     Delete R from the page table and insert P.
   // 4.     Update P's metadata, read in the page content from disk, and then return a pointer to P.
+  if (page_table_.count(page_id)==0){
+
+  }else{
+    replacer_->Pin(page_table_[page_id]);
+    return &pages_[page_id];
+  }
+  Page r;
+  if (r.IsDirty()) {
+
+  }
+  page_table_.erase(r);
+  page_table_[]=;
+
   return nullptr;
 }
 
