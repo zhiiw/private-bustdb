@@ -60,9 +60,9 @@ void LRUReplacer::Pin(frame_id_t frame_id) {
   newOne->prev=temp->prev;
   temp->prev->next=newOne;
   size--;
-
   mapIn.erase(frame_id);
   delete temp;
+
   return;
 }
 
