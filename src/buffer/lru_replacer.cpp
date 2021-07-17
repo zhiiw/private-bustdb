@@ -33,10 +33,12 @@ LRUReplacer::~LRUReplacer() {
     delete temp;
     temp = newerOne;
   }
+
 }
 
 bool LRUReplacer::Victim(frame_id_t *frame_id) {
   if (size == 0) {
+    frame_id= nullptr;
     return false;
   }
   Node *temp=new Node();

@@ -53,7 +53,7 @@ class LRUReplacer : public Replacer {
   Node *first;
   Node *end;
   std::unordered_map<frame_id_t,Node *> mapIn;
-
+  std::mutex lru_latchs;
   // TODO(student): implement me!
 };
 
