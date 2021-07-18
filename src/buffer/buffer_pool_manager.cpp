@@ -14,7 +14,7 @@
 
 #include <list>
 #include <unordered_map>
-
+#include "common/logger.h"
 namespace bustub {
 
 BufferPoolManager::BufferPoolManager(size_t pool_size, DiskManager *disk_manager, LogManager *log_manager)
@@ -42,55 +42,71 @@ Page *BufferPoolManager::FetchPageImpl(page_id_t page_id) {
   // 2.     If R is dirty, write it back to the disk.
   // 3.     Delete R from the page table and insert P.
   // 4.     Update P's metadata, read in the page content from disk, and then return a pointer to P.
-  int r = 0;
-  int p = 0;
-  if (replacer_->Size()==0){
-    return nullptr;
-  }
+  int r = 0; //the old frame id of the old page
+  int p = 0;//the new frame id of the page.
+
+  int oldPage=-1;
+
   if (page_table_.count(page_id) == 0) {
     if (free_list_.size() > 0) {
-      p = free_list_.front();  // this is frame. use this frame to store the page.
+      p = free_list_.front();  // this is frame. use this frame to store the page.p is requested frame just store it in pages_[p]
       free_list_.pop_front();
     }
     else {
+      if (replacer_->Size()==0){
+        return nullptr;
+      }
       replacer_->Victim(&r);  // get the frame id.
-      page_table_[page_id] = r;
       for (auto it : page_table_) {
         if (it.second == r) {
-          p = it.first;//get the page id
+          oldPage = it.first;//get the page id
           break;
         }
       }
-
-      if (pages_[r].IsDirty()) {
-        disk_manager_->WritePage(r, pages_[r].GetData());  // page store the frame
+      //r is frame_id
+      if (pages_[r].IsDirty()) {//frame
+        char * test = new char [PAGE_SIZE];
+        test=pages_[r].GetData();
+        disk_manager_->WritePage(oldPage, test);  // write to the r(eplacement page ) and store the page
       }
-      // replacer_->Unpin(r);//maybe? not sure.
 
-      page_table_.erase(r);
-      page_table_[page_id] = p;  // page id to frame id.
+      // replacer_->Unpin(r);//maybe? not sure
+      page_table_.erase(oldPage);
+      p=r;
       // TODO: let a new var to define the page
     }
   } else {
     int frame = page_table_[page_id];
-
-    replacer_->Pin(page_table_[page_id]);
+    replacer_->Pin(frame);
     return &pages_[frame];
   }
-  int frameTemp;
-  frameTemp = page_table_[page_id];
-  pages_[frameTemp].is_dirty_ = false;
-  pages_[frameTemp].pin_count_ = 0;
-  pages_[frameTemp].page_id_ = page_id;
-  return &pages_[frameTemp];
-}
+  page_table_[page_id] = p;  // page id to frame id.
 
+  pages_[p].is_dirty_ = false;
+  pages_[p].pin_count_++;
+  pages_[p].page_id_ = page_id;
+  replacer_->Pin(p);
+  char * ee = new char [PAGE_SIZE];
+  disk_manager_->ReadPage(page_id,ee);
+
+  strcpy(pages_[p].GetData(), ee);
+
+  return &pages_[p];
+}
+//manage pin page
 bool BufferPoolManager::UnpinPageImpl(page_id_t page_id, bool is_dirty) {
   if (page_table_.count(page_id) == 0) {
     return false;
   }
   int frame = page_table_[page_id];
-  pages_[frame].pin_count_ = 0;
+
+  if (pages_[frame].pin_count_==0){
+
+    return true;
+  }else if (pages_[frame].pin_count_<0){
+    return false;
+  }
+  pages_[frame].pin_count_=0;
   pages_[frame].is_dirty_ = is_dirty;
   replacer_->Unpin(frame);
   return true;
@@ -117,6 +133,7 @@ Page *BufferPoolManager::NewPageImpl(page_id_t *page_id) {
     frame = free_list_.front();  // this is frame id
     free_list_.pop_front();
   } else {
+
     replacer_->Victim(&frame);
     int pageTemp;
     for (auto i : page_table_) {
@@ -126,11 +143,20 @@ Page *BufferPoolManager::NewPageImpl(page_id_t *page_id) {
         break;
       }
     }
+    if (pages_[frame].IsDirty()) {//frame
+      char * test = new char [PAGE_SIZE];
+      test=pages_[frame].GetData();
+
+      disk_manager_->WritePage(pageTemp, test);  // write to the r(eplacement page ) and store the page
+    }
+    page_table_.erase(pageTemp);
   }
   int page = disk_manager_->AllocatePage();
   page_table_[page] = frame;
   pages_[frame].page_id_ = page;
-  pages_[frame].pin_count_ = 0;
+  pages_[frame].pin_count_ = 1;
+  pages_[frame].is_dirty_= false;
+
   *page_id = page;
   // 0.   Make sure you call DiskManager::AllocatePage!
   // 1.   If all the pages in the buffer pool are pinned, return nullptr.

@@ -23,6 +23,8 @@ LRUReplacer::LRUReplacer(size_t num_pages) {
   end->prev = first;
   first->prev = NULL;
   end->next = NULL;
+  end->val=-1;
+  first->val=-2;
 }
 
 LRUReplacer::~LRUReplacer() {
@@ -58,13 +60,12 @@ void LRUReplacer::Pin(frame_id_t frame_id) {
   Node *newOne;
   if (mapIn.count(frame_id)==0) return;
   temp=mapIn[frame_id];
-  newOne=temp->next;
-  newOne->prev=temp->prev;
-  temp->prev->next=newOne;
+  newOne=temp->next;//end
+  newOne->prev=temp->prev;//end->prev=9
+  temp->prev->next=newOne;//9->next=end
   size--;
   mapIn.erase(frame_id);
   delete temp;
-
   return;
 }
 
@@ -79,6 +80,8 @@ void LRUReplacer::Unpin(frame_id_t frame_id) {
     temp = first->next;
     first->next = newOne;
     temp->prev = newOne;
+    newOne->next=temp;
+    newOne->prev=first;
     return;
   }
   if (size<num_pages){
