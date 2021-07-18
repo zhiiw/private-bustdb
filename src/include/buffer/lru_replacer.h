@@ -48,11 +48,11 @@ class LRUReplacer : public Replacer {
   size_t Size() override;
 
  private:
-  int num_pages;
-  int size;
+  size_t num_pages;
+  size_t size;
   Node *first;
   Node *end;
-  std::unordered_map<frame_id_t,Node *> mapIn;
+  std::unordered_map<frame_id_t, Node *> mapIn;
   std::mutex lru_latchs;
   // TODO(student): implement me!
 };

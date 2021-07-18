@@ -114,8 +114,6 @@ class RowMatrixOperations {
         matTemp->SetElem(i, j, (rm1.GetElem(i, j) + rm2.GetElem(i, j)));
       }
     }
-    mat1.release();
-    mat2.release();
     return matTemp;
   }
 
@@ -144,8 +142,6 @@ class RowMatrixOperations {
         multiResult = 0;
       }
     }
-    mat1.release();
-    mat2.release();
     return matTemp;
   }
 
@@ -164,7 +160,6 @@ class RowMatrixOperations {
     int cols1 = rm1.GetColumns();
     int rows2 = rm2.GetRows();
     int cols2 = rm2.GetColumns();
-    int rows3 = rm3.GetRows();
     int cols3 = rm3.GetColumns();
     if ((!(rows1 == cols2 && rows2 == cols1)) && (!(rows1 == cols3 && cols2 == cols3))) {
       return std::unique_ptr<RowMatrix<T>>(nullptr);
