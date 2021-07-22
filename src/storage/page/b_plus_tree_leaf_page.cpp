@@ -60,6 +60,7 @@ INDEX_TEMPLATE_ARGUMENTS
 KeyType B_PLUS_TREE_LEAF_PAGE_TYPE::KeyAt(int index) const {
   // replace with your own code
   KeyType key{};
+
   return key;
 }
 
