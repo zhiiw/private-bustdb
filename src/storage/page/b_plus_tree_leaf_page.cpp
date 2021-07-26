@@ -32,17 +32,22 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::Init(page_id_t page_id, page_id_t parent_id, in
     this->SetPageId(page_id);
     this->SetParentPageId(parent_id);
     this->SetPageType(IndexPageType::LEAF_PAGE);
+
 }
 
 /**
  * Helper methods to set/get next page id
  */
 INDEX_TEMPLATE_ARGUMENTS
-page_id_t B_PLUS_TREE_LEAF_PAGE_TYPE::GetNextPageId() const { return INVALID_PAGE_ID; }
+page_id_t B_PLUS_TREE_LEAF_PAGE_TYPE::GetNextPageId() const {
+  //maybe the page 's next page but how can i find it ,in my memory we can get it by pointer
+  return next_page_id_;//yeah like this as a pointer
+
+}
 
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_LEAF_PAGE_TYPE::SetNextPageId(page_id_t next_page_id) {
-  this->SetNextPageId(next_page_id);
+  this->next_page_id_=next_page_id;
 }
 
 /**
@@ -50,7 +55,9 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::SetNextPageId(page_id_t next_page_id) {
  * NOTE: This method is only used when generating index iterator
  */
 INDEX_TEMPLATE_ARGUMENTS
-int B_PLUS_TREE_LEAF_PAGE_TYPE::KeyIndex(const KeyType &key, const KeyComparator &comparator) const { return 0; }
+int B_PLUS_TREE_LEAF_PAGE_TYPE::KeyIndex(const KeyType &key, const KeyComparator &comparator) const {
+  return 0;
+}
 
 /*
  * Helper method to find and return the key associated with input "index"(a.k.a
@@ -83,7 +90,41 @@ const MappingType &B_PLUS_TREE_LEAF_PAGE_TYPE::GetItem(int index) {
  */
 INDEX_TEMPLATE_ARGUMENTS
 int B_PLUS_TREE_LEAF_PAGE_TYPE::Insert(const KeyType &key, const ValueType &value, const KeyComparator &comparator) {
-  return 0;
+  //this is the core function
+  std::pair<KeyType,ValueType> ee;
+  std::pair<KeyType,ValueType> temp;
+  ee.first=key;
+  ee.second=value;
+  int size= this->GetSize();
+  if (size==this->GetMaxSize()){
+    //split but i can't so...
+  }
+  else{
+    bool flag=false;
+    for (int i = 0; i < size; ++i) {
+
+      if (array[i].second>ee.second){
+        flag= true;
+        //should i manage to re arrange its position?yalei yalei ie seems it need to re arrage it
+        for (int j = i; j < size; ++j) {
+          if (j!=i){
+            ee=temp;
+          }
+          temp=array[j];
+          array[j]=ee;
+        }
+        array[size]=temp;
+        break;
+        //this should have another logic
+      }
+    }
+    if (!flag){
+      array[size]=ee;
+    }
+  }
+  size++;
+  this->SetSize(size);
+  return size;
 }
 
 /*****************************************************************************

@@ -49,7 +49,10 @@ void BPlusTreePage::SetMaxSize(int size) {this->max_size_=size;}
  * Helper method to get min page size
  * Generally, min page size == max page size / 2
  */
-int BPlusTreePage::GetMinSize() const { return this->GetMaxSize()/2; }
+int BPlusTreePage::GetMinSize() const {
+  //maybe difficult.
+  return this->GetMaxSize()/2;
+}
 
 /*
  * Helper methods to get/set parent page id
@@ -70,6 +73,6 @@ void BPlusTreePage::SetPageId(page_id_t page_id) {
 /*
  * Helper methods to set lsn
  */
-void BPlusTreePage::SetLSN(lsn_t lsn) { lsn_ = lsn; }
+void BPlusTreePage::SetLSN(lsn_t lsn) { this->lsn_ = lsn; }
 
 }  // namespace bustub

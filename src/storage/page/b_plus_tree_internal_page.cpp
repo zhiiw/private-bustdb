@@ -44,9 +44,7 @@ KeyType B_PLUS_TREE_INTERNAL_PAGE_TYPE::KeyAt(int index) const {
 }
 
 INDEX_TEMPLATE_ARGUMENTS
-void B_PLUS_TREE_INTERNAL_PAGE_TYPE::SetKeyAt(int index, const KeyType &key) {
-  array[index].first=key;
-}
+void B_PLUS_TREE_INTERNAL_PAGE_TYPE::SetKeyAt(int index, const KeyType &key) { array[index].first = key; }
 
 /*
  * Helper method to find and return array index(or offset), so that its value
@@ -54,10 +52,10 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::SetKeyAt(int index, const KeyType &key) {
  */
 INDEX_TEMPLATE_ARGUMENTS
 int B_PLUS_TREE_INTERNAL_PAGE_TYPE::ValueIndex(const ValueType &value) const {
-  int index=0;
-  //not sure to count like this but just try it
-  for (int i=0;i<GetSize();i++){
-    if (array[i].second==value){
+  int index = 0;
+  // not sure to count like this but just try it
+  for (int i = 0; i < GetSize(); i++) {
+    if (array[i].second == value) {
       return i;
     }
   }
@@ -81,7 +79,7 @@ ValueType B_PLUS_TREE_INTERNAL_PAGE_TYPE::ValueAt(int index) const { return arra
  */
 INDEX_TEMPLATE_ARGUMENTS
 ValueType B_PLUS_TREE_INTERNAL_PAGE_TYPE::Lookup(const KeyType &key, const KeyComparator &comparator) const {
-  return INVALID_PAGE_ID;//I think it means i should search the leaf page to find the ee;
+  return INVALID_PAGE_ID;  // I think it means i should search the leaf page to find the ee;
 }
 
 /*****************************************************************************
