@@ -32,7 +32,7 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::Init(page_id_t page_id, page_id_t parent_id, in
     this->SetPageId(page_id);
     this->SetParentPageId(parent_id);
     this->SetPageType(IndexPageType::LEAF_PAGE);
-
+    this->SetSize(0);
 }
 
 /**
@@ -56,7 +56,13 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::SetNextPageId(page_id_t next_page_id) {
  */
 INDEX_TEMPLATE_ARGUMENTS
 int B_PLUS_TREE_LEAF_PAGE_TYPE::KeyIndex(const KeyType &key, const KeyComparator &comparator) const {
-  return 0;
+  int len=this->GetSize();
+  for (int i = 0; i < len; ++i) {
+    if (array[i].first>=key){
+      return i;
+    }
+  }
+  return len;
 }
 
 /*
