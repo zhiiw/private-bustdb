@@ -41,7 +41,7 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::Init(page_id_t page_id, page_id_t parent_id, in
 INDEX_TEMPLATE_ARGUMENTS
 page_id_t B_PLUS_TREE_LEAF_PAGE_TYPE::GetNextPageId() const {
   //maybe the page 's next page but how can i find it ,in my memory we can get it by pointer
-  return next_page_id_;//yeah like this as a pointer
+  return next_page_id_;//yeah like 1111this as a pointer
 
 }
 
@@ -72,9 +72,8 @@ int B_PLUS_TREE_LEAF_PAGE_TYPE::KeyIndex(const KeyType &key, const KeyComparator
 INDEX_TEMPLATE_ARGUMENTS
 KeyType B_PLUS_TREE_LEAF_PAGE_TYPE::KeyAt(int index) const {
   // replace with your own code
-  KeyType key{};
 
-  return key;
+  return array[index-1].first;
 }
 
 /*
@@ -84,7 +83,8 @@ KeyType B_PLUS_TREE_LEAF_PAGE_TYPE::KeyAt(int index) const {
 INDEX_TEMPLATE_ARGUMENTS
 const MappingType &B_PLUS_TREE_LEAF_PAGE_TYPE::GetItem(int index) {
   // replace with your own code
-  return array[0];
+
+  return array[index-1];
 }
 
 /*****************************************************************************
@@ -97,11 +97,15 @@ const MappingType &B_PLUS_TREE_LEAF_PAGE_TYPE::GetItem(int index) {
 INDEX_TEMPLATE_ARGUMENTS
 int B_PLUS_TREE_LEAF_PAGE_TYPE::Insert(const KeyType &key, const ValueType &value, const KeyComparator &comparator) {
   //this is the core function
+  if (key<array[0].first){
+    array[0].second=
+  }
+  int size= this->GetSize();
+  /*
   std::pair<KeyType,ValueType> ee;
   std::pair<KeyType,ValueType> temp;
   ee.first=key;
   ee.second=value;
-  int size= this->GetSize();
   if (size==this->GetMaxSize()){
     //split but i can't so...
   }
@@ -127,7 +131,7 @@ int B_PLUS_TREE_LEAF_PAGE_TYPE::Insert(const KeyType &key, const ValueType &valu
     if (!flag){
       array[size]=ee;
     }
-  }
+  }*/
   size++;
   this->SetSize(size);
   return size;
