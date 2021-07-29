@@ -176,14 +176,35 @@ int B_PLUS_TREE_LEAF_PAGE_TYPE::Insert(const KeyType &key, const ValueType &valu
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_LEAF_PAGE_TYPE::MoveHalfTo(BPlusTreeLeafPage *recipient) {
   //the things is to ensure which is bigger I will set the recepient second
+  recipient->SetNextPageId(this->GetNextPageId());
+  this->SetNextPageId(recipient->GetPageId());
+  int max=this->GetMaxSize();
+  if (this->GetMaxSize()%2==0){
+    this->SetSize(max/2);
+    int j=0;
+    for (int i = max/2; i < max; ++i) {
+      recipient->array[j]= this->array[i];
+    }
+  }else{
+    this->SetSize(max/2+1);
+    int j=0;
 
+    for (int i = max/2+1; i < max; ++i) {
+      recipient->array[j]= this->array[i];
+
+    }
+  }
 }
 
 /*
  * Copy starting from items, and copy {size} number of elements into me.
  */
 INDEX_TEMPLATE_ARGUMENTS
-void B_PLUS_TREE_LEAF_PAGE_TYPE::CopyNFrom(MappingType *items, int size) {}
+void B_PLUS_TREE_LEAF_PAGE_TYPE::CopyNFrom(MappingType *items, int size) {
+  for (int i = 0; i < size; ++i) {
+    this->array[i]=items[i];
+  }
+}
 
 /*****************************************************************************
  * LOOKUP
