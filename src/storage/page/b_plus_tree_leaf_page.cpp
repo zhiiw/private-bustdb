@@ -58,7 +58,7 @@ INDEX_TEMPLATE_ARGUMENTS
 int B_PLUS_TREE_LEAF_PAGE_TYPE::KeyIndex(const KeyType &key, const KeyComparator &comparator) const {
   int len=this->GetSize();
   for (int i = 0; i < len; ++i) {
-    if (array[i].first>=key){
+    if (comparator(array[i].first,key)){
       return i;
     }
   }
@@ -97,12 +97,41 @@ const MappingType &B_PLUS_TREE_LEAF_PAGE_TYPE::GetItem(int index) {
 INDEX_TEMPLATE_ARGUMENTS
 int B_PLUS_TREE_LEAF_PAGE_TYPE::Insert(const KeyType &key, const ValueType &value, const KeyComparator &comparator) {
   //this is the core function
-  if (key<array[0].first){
-    array[0].second=
-  }
   int size= this->GetSize();
-  /*
+  std::pair<KeyType,ValueType> temp;
   std::pair<KeyType,ValueType> ee;
+  ee.first=key;
+  ee.second=value;
+  comparator(key,ee.first);
+  bool flag= false;
+  if (comparator(key,array[0].first)){//if key is smaller than all
+    //rearrange array
+    temp=array[0];
+    array[0]=ee;
+    for (int i = 1; i < size; ++i) {
+      ee=temp;
+      temp=array[i];
+      array[i]=ee;
+    }
+  }else {
+    for (int i = 0; i < size; ++i) {
+      if (comparator(key, array[i].first)) {
+        // should i manage to re arrange its position?yalei yalei ie seems it need to re arrage it
+        for (int j = i; j < size; ++j) {
+          if (j != i) {
+            ee = temp;
+          }
+          temp = array[j];
+          array[j] = ee;
+        }
+        array[size] = temp;
+        break;
+        // this should have another logic
+      }
+    }
+  }
+  /*
+  std::pair<KeyType,ValueType> temp;
   std::pair<KeyType,ValueType> temp;
   ee.first=key;
   ee.second=value;
@@ -135,6 +164,7 @@ int B_PLUS_TREE_LEAF_PAGE_TYPE::Insert(const KeyType &key, const ValueType &valu
   size++;
   this->SetSize(size);
   return size;
+
 }
 
 /*****************************************************************************
@@ -144,7 +174,10 @@ int B_PLUS_TREE_LEAF_PAGE_TYPE::Insert(const KeyType &key, const ValueType &valu
  * Remove half of key & value pairs from this page to "recipient" page
  */
 INDEX_TEMPLATE_ARGUMENTS
-void B_PLUS_TREE_LEAF_PAGE_TYPE::MoveHalfTo(BPlusTreeLeafPage *recipient) {}
+void B_PLUS_TREE_LEAF_PAGE_TYPE::MoveHalfTo(BPlusTreeLeafPage *recipient) {
+  //the things is to ensure which is bigger I will set the recepient second
+
+}
 
 /*
  * Copy starting from items, and copy {size} number of elements into me.
