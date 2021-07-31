@@ -25,6 +25,7 @@ LRUReplacer::LRUReplacer(size_t num_pages) {
   end->next = nullptr;
   end->val = -1;
   first->val = -2;
+
 }
 
 LRUReplacer::~LRUReplacer() {
