@@ -313,8 +313,18 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::MoveLastToFrontOf(BPlusTreeLeafPage *recipient)
  */
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_LEAF_PAGE_TYPE::CopyFirstFrom(const MappingType &item) {
-  for (int i = 0; i < ; ++i) {
-    
+  int size= this->GetSize();
+  std::pair<KeyType,ValueType> temp;
+  std::pair<KeyType,ValueType> ee;
+  ee=this->array[this->GetSize()-1];
+  bool flag= false;
+  //rearrange array
+  temp=array[0];
+  array[0]=item;
+  for (int i = 1; i < size; ++i) {
+    ee=temp;
+    temp=array[i];
+    array[i]=ee;
   }
 }
 
