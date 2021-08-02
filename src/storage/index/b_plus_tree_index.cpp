@@ -37,7 +37,7 @@ void BPLUSTREE_INDEX_TYPE::DeleteEntry(const Tuple &key, RID rid, Transaction *t
   index_key.SetFromKey(key);
 
   container_.Remove(index_key, transaction);
-}
+-
 
 INDEX_TEMPLATE_ARGUMENTS
 void BPLUSTREE_INDEX_TYPE::ScanKey(const Tuple &key, std::vector<RID> *result, Transaction *transaction) {

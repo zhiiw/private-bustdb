@@ -51,7 +51,19 @@ void BPlusTreePage::SetMaxSize(int size) {this->max_size_=size;}
  */
 int BPlusTreePage::GetMinSize() const {
   //maybe difficult.
-  return this->GetMaxSize()/2;
+  if(this->parent_page_id_==INVALID_PAGE_ID){
+    if (size_<=1){
+      return 1;
+    }
+    if (this->GetMaxSize()%2==1){
+      return this->GetMaxSize()/2+1;
+    }
+    return this->GetMaxSize()/2;
+  }
+  if ((this->GetMaxSize()-1)%2==1){
+    return (this->GetMaxSize()-1)/2+1;
+  }
+  return (this->GetMaxSize()-1)/2;
 }
 
 /*
