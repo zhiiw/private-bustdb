@@ -273,7 +273,10 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::MoveAllTo(BPlusTreeLeafPage *recipient) {
  */
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_LEAF_PAGE_TYPE::MoveFirstToEndOf(BPlusTreeLeafPage *recipient) {
-  recipient->array[0]=this->array[0];
+  recipient->array[this->GetSize()]=this->array[0];
+  for (int j = 1; j < this->GetSize(); ++j) {
+    array[j-1]=array[j];
+  }
 }
 
 /*

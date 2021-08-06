@@ -167,7 +167,11 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::CopyNFrom(MappingType *items, int size, Buf
  * NOTE: store key&value pair continuously after deletion
  */
 INDEX_TEMPLATE_ARGUMENTS
-void B_PLUS_TREE_INTERNAL_PAGE_TYPE::Remove(int index) {}
+void B_PLUS_TREE_INTERNAL_PAGE_TYPE::Remove(int index) {
+  for (int j = index + 1; j < this->GetSize() - 1; ++j) {
+    array[j - 1] = array[j];//TODO: delete
+  }
+}
 
 /*
  * Remove the only key & value pair in internal page and return the value
@@ -175,17 +179,8 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::Remove(int index) {}
  */
 INDEX_TEMPLATE_ARGUMENTS
 ValueType B_PLUS_TREE_INTERNAL_PAGE_TYPE::RemoveAndReturnOnlyChild() {
-  int size=this->GetSize();
-  for (int i = 0; i < this->GetSize(); ++i) {
-    if (comparator(this->array[i].first,key)==0){
-      for (int j = i+1; j < this->GetSize()-1; ++j) {
-        array[j-1]=array[j];
-      }
-      this->SetSize(size-1);
-      return size-1;
-    }
-  }
-  return this->GetSize();
+
+  return this->array[0].second;//not sure
 }
 /*****************************************************************************
  * MERGE
@@ -220,7 +215,14 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveAllTo(BPlusTreeInternalPage *recipient,
  */
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveFirstToEndOf(BPlusTreeInternalPage *recipient, const KeyType &middle_key,
-                                                      BufferPoolManager *buffer_pool_manager) {}
+                                                      BufferPoolManager *buffer_pool_manager) {
+  recipient->array[this->GetSize()]=this->array[0];
+  for (int j = 1; j < this->GetSize(); ++j) {
+    array[j-1]=array[j];
+  }
+  //TODO ee
+}
+
 
 /* Append an entry at the end.
  * Since it is an internal page, the moved entry(page)'s parent needs to be updated.
@@ -272,7 +274,7 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::CopyFirstFrom(const MappingType &pair, Buff
   bool flag= false;
   //rearrange array
   temp=array[0];
-  array[0]=item;
+  array[0]=pair;
   for (int i = 1; i < size; ++i) {
     ee=temp;
     temp=array[i];
