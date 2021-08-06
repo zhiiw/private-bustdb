@@ -58,7 +58,7 @@ INDEX_TEMPLATE_ARGUMENTS
 int B_PLUS_TREE_LEAF_PAGE_TYPE::KeyIndex(const KeyType &key, const KeyComparator &comparator) const {
   int len=this->GetSize();
   for (int i = 0; i < len; ++i) {
-    if (comparator(array[i].first,key)){
+    if (comparator(array[i].first,key)==0){
       return i;
     }
   }
@@ -73,7 +73,7 @@ INDEX_TEMPLATE_ARGUMENTS
 KeyType B_PLUS_TREE_LEAF_PAGE_TYPE::KeyAt(int index) const {
   // replace with your own code
 
-  return array[index-1].first;
+  return array[index].first;
 }
 
 /*
@@ -84,7 +84,7 @@ INDEX_TEMPLATE_ARGUMENTS
 const MappingType &B_PLUS_TREE_LEAF_PAGE_TYPE::GetItem(int index) {
   // replace with your own code
 
-  return array[index-1];
+  return array[index];
 }
 
 /*****************************************************************************
@@ -102,9 +102,8 @@ int B_PLUS_TREE_LEAF_PAGE_TYPE::Insert(const KeyType &key, const ValueType &valu
   std::pair<KeyType,ValueType> ee;
   ee.first=key;
   ee.second=value;
-  comparator(key,ee.first);
   bool flag= false;
-  if (comparator(key,array[0].first)){//if key is smaller than all
+  if (comparator(key,array[0].first)<0){//if key is smaller than all
     //rearrange array
     temp=array[0];
     array[0]=ee;
@@ -115,7 +114,7 @@ int B_PLUS_TREE_LEAF_PAGE_TYPE::Insert(const KeyType &key, const ValueType &valu
     }
   }else {
     for (int i = 0; i < size; ++i) {
-      if (comparator(key, array[i].first)) {
+      if (comparator(key, array[i].first)<0) {
         // should i manage to re arrange its position?yalei yalei ie seems it need to re arrage it
         for (int j = i; j < size; ++j) {
           if (j != i) {
@@ -184,6 +183,7 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::MoveHalfTo(BPlusTreeLeafPage *recipient) {
     int j=0;
     for (int i = max/2; i < max; ++i) {
       recipient->array[j]= this->array[i];
+      j++;
     }
   }else{
     this->SetSize(max/2+1);
@@ -191,7 +191,7 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::MoveHalfTo(BPlusTreeLeafPage *recipient) {
 
     for (int i = max/2+1; i < max; ++i) {
       recipient->array[j]= this->array[i];
-
+      j++;
     }
   }
 }

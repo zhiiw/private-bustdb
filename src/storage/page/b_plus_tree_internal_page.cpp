@@ -98,6 +98,7 @@ ValueType B_PLUS_TREE_INTERNAL_PAGE_TYPE::Lookup(const KeyType &key, const KeyCo
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_INTERNAL_PAGE_TYPE::PopulateNewRoot(const ValueType &old_value, const KeyType &new_key,
                                                      const ValueType &new_value) {
+
 }
 /*
  * Insert new_key & new_value pair right after the pair with its value ==
@@ -108,8 +109,9 @@ INDEX_TEMPLATE_ARGUMENTS
 int B_PLUS_TREE_INTERNAL_PAGE_TYPE::InsertNodeAfter(const ValueType &old_value, const KeyType &new_key,
                                                     const ValueType &new_value) {
   MappingType ee{new_key,new_value};
-  if (this->IsRootPage()){
-    if (this->array[0].first<)//maybe
+
+  for (int i = 0; i < this->GetSize(); ++i) {
+    if ()
   }
   this->IncreaseSize(1);
   return this->GetSize();
@@ -124,14 +126,15 @@ int B_PLUS_TREE_INTERNAL_PAGE_TYPE::InsertNodeAfter(const ValueType &old_value, 
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveHalfTo(BPlusTreeInternalPage *recipient,
                                                 BufferPoolManager *buffer_pool_manager) {
-  recipient->SetNextPageId(this->GetNextPageId());
-  this->SetNextPageId(recipient->GetPageId());
+  int pgid=recipient->GetPageId();
+  buffer_pool_manager->NewPage(&pgid);
   int max=this->GetMaxSize();
   if (this->GetMaxSize()%2==0){
     this->SetSize(max/2);
     int j=0;
     for (int i = max/2; i < max; ++i) {
       recipient->array[j]= this->array[i];
+      j++;
     }
   }else{
     this->SetSize(max/2+1);
@@ -139,7 +142,7 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveHalfTo(BPlusTreeInternalPage *recipient
 
     for (int i = max/2+1; i < max; ++i) {
       recipient->array[j]= this->array[i];
-
+      j++;
     }
   }
 }
@@ -150,8 +153,8 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveHalfTo(BPlusTreeInternalPage *recipient
  */
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_INTERNAL_PAGE_TYPE::CopyNFrom(MappingType *items, int size, BufferPoolManager *buffer_pool_manager) {
-  for (int i = 0; i < size; ++i) {
-    this->array[i]=items[i];
+  for (int i = 0; i < size; ++i) {//dont know what it mean
+    this->array[i]=items[i];//TODO
   }
 }
 
