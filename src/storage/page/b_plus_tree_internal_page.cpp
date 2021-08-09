@@ -29,8 +29,11 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::Init(page_id_t page_id, page_id_t parent_id
   this->SetMaxSize(max_size);
   this->SetPageId(page_id);
   this->SetParentPageId(parent_id);
+  this->SetSize(0);
   this->SetPageType(IndexPageType::INTERNAL_PAGE);
 }
+
+
 /*
  * Helper method to get/set the key associated with input "index"(a.k.a
  * array offset)
@@ -38,12 +41,15 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::Init(page_id_t page_id, page_id_t parent_id
 INDEX_TEMPLATE_ARGUMENTS
 KeyType B_PLUS_TREE_INTERNAL_PAGE_TYPE::KeyAt(int index) const {
   // replace with your own code
-
+  assert(index>=0&&index<this->GetSize());
   return array[index].first;
 }
 
 INDEX_TEMPLATE_ARGUMENTS
-void B_PLUS_TREE_INTERNAL_PAGE_TYPE::SetKeyAt(int index, const KeyType &key) { array[index].first = key; }
+void B_PLUS_TREE_INTERNAL_PAGE_TYPE::SetKeyAt(int index, const KeyType &key) {
+  assert(index >= 0 && index < GetSize());
+
+  array[index].first = key; }
 
 /*
  * Helper method to find and return array index(or offset), so that its value
@@ -57,7 +63,7 @@ int B_PLUS_TREE_INTERNAL_PAGE_TYPE::ValueIndex(const ValueType &value) const {
       return i;
     }
   }
-  return 0;
+  return -1;
 }
 
 /*
@@ -65,7 +71,7 @@ int B_PLUS_TREE_INTERNAL_PAGE_TYPE::ValueIndex(const ValueType &value) const {
  * offset)
  */
 INDEX_TEMPLATE_ARGUMENTS
-ValueType B_PLUS_TREE_INTERNAL_PAGE_TYPE::ValueAt(int index) const { return this->array[index-1].second; }
+ValueType B_PLUS_TREE_INTERNAL_PAGE_TYPE::ValueAt(int index) const { return this->array[index].second; }
 
 /*****************************************************************************
  * LOOKUP
