@@ -56,13 +56,18 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::SetNextPageId(page_id_t next_page_id) {
  */
 INDEX_TEMPLATE_ARGUMENTS
 int B_PLUS_TREE_LEAF_PAGE_TYPE::KeyIndex(const KeyType &key, const KeyComparator &comparator) const {
-  int len=this->GetSize();
-  for (int i = 0; i < len; ++i) {
-    if (comparator(array[i].first,key)==0){
-      return i;
+  assert(GetSize() >= 0);
+  // use binary search
+  int l = 0, r = GetSize() - 1, mid;
+  while (l <= r) {
+    mid = (r - l) / 2 + l;
+    if (comparator(array[mid].first, key) < 0) {
+      l = mid + 1;
+    } else {
+      r = mid - 1;
     }
   }
-  return len;
+  return r + 1;
 }
 
 /*
