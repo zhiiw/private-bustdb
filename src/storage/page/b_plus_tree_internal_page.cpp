@@ -148,8 +148,8 @@ INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveHalfTo(BPlusTreeInternalPage *recipient,
                                                 BufferPoolManager *buffer_pool_manager) {
   int pgid = recipient->GetPageId();
-  buffer_pool_manager->NewPage(&pgid);
-  int max = this->GetMaxSize();
+  int total= this->GetMaxSize()+1;
+  int temp=total/2;
   this->SetSize(max / 2);
   int j = 0;
   for (int i = max / 2; i < max; ++i) {

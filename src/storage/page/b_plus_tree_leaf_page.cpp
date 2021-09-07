@@ -88,7 +88,6 @@ KeyType B_PLUS_TREE_LEAF_PAGE_TYPE::KeyAt(int index) const {
 INDEX_TEMPLATE_ARGUMENTS
 const MappingType &B_PLUS_TREE_LEAF_PAGE_TYPE::GetItem(int index) {
   // replace with your own code
-
   return array[index];
 }
 
@@ -110,6 +109,7 @@ int B_PLUS_TREE_LEAF_PAGE_TYPE::Insert(const KeyType &key, const ValueType &valu
   bool flag= false;
   if (comparator(key,array[0].first)<0){//if key is smaller than all
     //rearrange array
+
     temp=array[0];
     array[0]=ee;
     for (int i = 1; i < size; ++i) {
@@ -193,7 +193,6 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::MoveHalfTo(BPlusTreeLeafPage *recipient) {
   }else{
     this->SetSize(max/2+1);
     int j=0;
-
     for (int i = max/2+1; i < max; ++i) {
       recipient->array[j]= this->array[i];
       j++;

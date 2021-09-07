@@ -113,7 +113,7 @@ bool BufferPoolManager::UnpinPageImpl(page_id_t page_id, bool is_dirty) {
   int frame = page_table_[page_id];
 
   if (pages_[frame].pin_count_ == 0) {
-    latch_.unlock();
+    latch_.unlock(();
     return true;
   }
   pages_[frame].pin_count_ = 0;

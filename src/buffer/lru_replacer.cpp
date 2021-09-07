@@ -67,7 +67,6 @@ void LRUReplacer::Pin(frame_id_t frame_id) {
   Node *newOne;
   if (mapIn.count(frame_id) == 0) {
     lru_latchs.unlock();
-
     return;
   }
   temp = mapIn[frame_id];
@@ -84,11 +83,8 @@ void LRUReplacer::Unpin(frame_id_t frame_id) {
   lru_latchs.lock();
   Node *newOne;
   Node *temp = new Node();
-
   if (mapIn.count(frame_id) != 0) {
-
     lru_latchs.unlock();
-
     return;
   }
   if (size < num_pages) {

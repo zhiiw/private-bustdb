@@ -55,15 +55,9 @@ int BPlusTreePage::GetMinSize() const {
     if (size_<=1){
       return 1;
     }
-    if (this->GetMaxSize()%2==1){
-      return this->GetMaxSize()/2+1;
-    }
-    return this->GetMaxSize()/2;
+    return 2;
   }
-  if ((this->GetMaxSize()-1)%2==1){
-    return (this->GetMaxSize()-1)/2+1;
-  }
-  return (this->GetMaxSize()-1)/2;
+  return (this->GetMaxSize()+1)/2;
 }
 
 /*

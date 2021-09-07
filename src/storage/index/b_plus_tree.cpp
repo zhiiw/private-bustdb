@@ -31,7 +31,9 @@ BPLUSTREE_TYPE::BPlusTree(std::string name, BufferPoolManager *buffer_pool_manag
  * Helper function to decide whether current b+tree is empty
  */
 INDEX_TEMPLATE_ARGUMENTS
-bool BPLUSTREE_TYPE::IsEmpty() const { return true; }
+bool BPLUSTREE_TYPE::IsEmpty() const {
+  return this->root_page_id_ == INVALID_PAGE_ID;
+}
 /*****************************************************************************
  * SEARCH
  *****************************************************************************/
@@ -42,6 +44,12 @@ bool BPLUSTREE_TYPE::IsEmpty() const { return true; }
  */
 INDEX_TEMPLATE_ARGUMENTS
 bool BPLUSTREE_TYPE::GetValue(const KeyType &key, std::vector<ValueType> *result, Transaction *transaction) {
+
+  for (auto i :result) {
+    if (key==i){
+      return true;
+    }
+  }
   return false;
 }
 
@@ -56,7 +64,13 @@ bool BPLUSTREE_TYPE::GetValue(const KeyType &key, std::vector<ValueType> *result
  * keys return false, otherwise return true.
  */
 INDEX_TEMPLATE_ARGUMENTS
-bool BPLUSTREE_TYPE::Insert(const KeyType &key, const ValueType &value, Transaction *transaction) { return false; }
+bool BPLUSTREE_TYPE::Insert(const KeyType &key, const ValueType &value, Transaction *transaction) {
+  if (IsEmpty()){
+    StartNewTree(key,value);
+    return true;
+  }
+  return InsertIntoLeaf(key,value,transaction);
+}
 /*
  * Insert constant key & value pair into an empty tree
  * User needs to first ask for new page from buffer pool manager(NOTICE: throw
@@ -212,7 +226,22 @@ INDEXITERATOR_TYPE BPLUSTREE_TYPE::end() { return INDEXITERATOR_TYPE(); }
  */
 INDEX_TEMPLATE_ARGUMENTS
 Page *BPLUSTREE_TYPE::FindLeafPage(const KeyType &key, bool leftMost) {
-  throw Exception(ExceptionType::NOT_IMPLEMENTED, "Implement this for test");
+  if (IsEmpty()) {
+    return nullptr;
+  }
+  auto rootPage = reinterpret_cast<BPlusTreePage *>(this->buffer_pool_manager_->FetchPage(root_page_id_)->GetData());
+  int cur=this->root_page_id_;
+  for (rootPage;!rootPage->IsLeafPage();rootPage=reinterpret_cast<BPlusTreePage *>(this->buffer_pool_manager_->FetchPage(cur)->GetData())) {
+    auto ee=static_cast<InternalPage *>(rootPage);
+    int temmp=cur;
+    if (leftMost){
+      cur = ee->ValueAt(0);
+    }else{
+      cur=ee->Lookup(key,this->comparator_);
+    }
+    this->buffer_pool_manager_->UnpinPage(temmp, false);
+  }
+  return this->buffer_pool_manager_->FetchPage(rootPage->GetPageId());
 }
 
 /*
