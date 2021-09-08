@@ -147,12 +147,11 @@ int B_PLUS_TREE_INTERNAL_PAGE_TYPE::InsertNodeAfter(const ValueType &old_value, 
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveHalfTo(BPlusTreeInternalPage *recipient,
                                                 BufferPoolManager *buffer_pool_manager) {
-  int pgid = recipient->GetPageId();
   int total= this->GetMaxSize()+1;
-  int temp=total/2;
-  this->SetSize(max / 2);
+  //int temp=total/2;
+  this->SetSize(total / 2);
   int j = 0;
-  for (int i = max / 2; i < max; ++i) {
+  for (int i = total / 2; i < total; ++i) {
     recipient->array[j] = this->array[i];
     j++;
   }
@@ -239,7 +238,7 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveFirstToEndOf(BPlusTreeInternalPage *rec
  */
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_INTERNAL_PAGE_TYPE::CopyLastFrom(const MappingType &pair, BufferPoolManager *buffer_pool_manager) {
-  buffer_pool_manager->array[0] = this->array[0];
+  //buffer_pool_manager->array[0] = this->array[0];
 }
 
 /*
@@ -256,7 +255,7 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveLastToFrontOf(BPlusTreeInternalPage *re
   std::pair<KeyType, ValueType> temp;
   std::pair<KeyType, ValueType> ee;
   ee = this->array[this->GetSize() - 1];
-  bool flag = false;
+  //bool flag = false;
   // rearrange array
   temp = array[0];
   array[0] = ee;
@@ -278,7 +277,7 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::CopyFirstFrom(const MappingType &pair, Buff
   std::pair<KeyType, ValueType> temp;
   std::pair<KeyType, ValueType> ee;
   ee = this->array[this->GetSize() - 1];
-  bool flag = false;
+  //bool flag = false;
   // rearrange array
   temp = array[0];
   array[0] = pair;

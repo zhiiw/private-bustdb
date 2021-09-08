@@ -106,7 +106,6 @@ int B_PLUS_TREE_LEAF_PAGE_TYPE::Insert(const KeyType &key, const ValueType &valu
   std::pair<KeyType,ValueType> ee;
   ee.first=key;
   ee.second=value;
-  bool flag= false;
   if (comparator(key,array[0].first)<0){//if key is smaller than all
     //rearrange array
 
@@ -222,7 +221,6 @@ INDEX_TEMPLATE_ARGUMENTS
 bool B_PLUS_TREE_LEAF_PAGE_TYPE::Lookup(const KeyType &key, ValueType *value, const KeyComparator &comparator) const {
   for (int i = 0; i < this->GetSize(); ++i) {
     if (comparator(this->array[i].first,key)==0){
-      this->array[i].second=value;
       return true;
     }
   }
@@ -302,7 +300,7 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::MoveLastToFrontOf(BPlusTreeLeafPage *recipient)
   std::pair<KeyType,ValueType> temp;
   std::pair<KeyType,ValueType> ee;
   ee=this->array[this->GetSize()-1];
-  bool flag= false;
+  //bool flag= false;
   //rearrange array
   temp=array[0];
   array[0]=ee;
@@ -324,7 +322,7 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::CopyFirstFrom(const MappingType &item) {
   std::pair<KeyType,ValueType> temp;
   std::pair<KeyType,ValueType> ee;
   ee=this->array[this->GetSize()-1];
-  bool flag= false;
+  //bool flag= false;
   //rearrange array
   temp=array[0];
   array[0]=item;
