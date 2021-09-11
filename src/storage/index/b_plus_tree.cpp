@@ -135,7 +135,7 @@ N *BPLUSTREE_TYPE::Split(N *node) {
       throw std::bad_alloc();
     }
     auto transPage=reinterpret_cast<N *>(page);
-    node->MoveHalfTo(transPage);
+    reinterpret_cast<InternalPage *>(node)->MoveHalfTo(reinterpret_cast<InternalPage *>(transPage),buffer_pool_manager_);
     buffer_pool_manager_->UnpinPage(pageId, true);
     buffer_pool_manager_->UnpinPage(node->GetPageId(), true);
     return transPage;
@@ -157,6 +157,25 @@ N *BPLUSTREE_TYPE::Split(N *node) {
 INDEX_TEMPLATE_ARGUMENTS
 void BPLUSTREE_TYPE::InsertIntoParent(BPlusTreePage *old_node, const KeyType &key, BPlusTreePage *new_node,
                                       Transaction *transaction) {
+  if (old_node->IsRootPage()){
+    reinterpret_cast<InternalPage *>(old_node)->PopulateNewRoot(static_cast<InternalPage *>(new_node)->Lookup(key,comparator_),static_cast<InternalPage *>(new_node)->KeyAt(0),static_cast<InternalPage *>(new_node)->ValueAt(0));
+    //create new root to contain two page.
+    reinterpret_cast<InternalPage *>(old_node)->SetParentPageId(-1);
+    return;
+
+  }
+  int parentID = old_node->GetParentPageId();
+  auto parentPage = reinterpret_cast<BPlusTreePage *>(this->buffer_pool_manager_->FetchPage(parentID)->GetData());
+  //remember to unpin
+  new_node->SetParentPageId(parentID);
+
+  static_cast<InternalPage *>(old_node)->InsertNodeAfter(old_node->GetPageId(),key,new_node->GetPageId());
+  if (parentPage->GetSize()>parentPage->GetMaxSize()){
+    auto new_page = Split(parentPage);
+    InsertIntoParent(parentPage,key,new_page);
+  }
+  buffer_pool_manager_->UnpinPage(parentID, true);
+
   // when split use it
 }
 
@@ -171,7 +190,10 @@ void BPLUSTREE_TYPE::InsertIntoParent(BPlusTreePage *old_node, const KeyType &ke
  * necessary.
  */
 INDEX_TEMPLATE_ARGUMENTS
-void BPLUSTREE_TYPE::Remove(const KeyType &key, Transaction *transaction) {}
+void BPLUSTREE_TYPE::Remove(const KeyType &key, Transaction *transaction) {
+  if (IsEmpty()) return;
+
+}
 
 /*
  * User needs to first find the sibling of input page. If sibling's size + input
