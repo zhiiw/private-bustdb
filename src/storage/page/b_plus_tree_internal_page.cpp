@@ -155,6 +155,8 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveHalfTo(BPlusTreeInternalPage *recipient
     recipient->array[j] = this->array[i];
     j++;
   }
+  recipient->SetSize(j);
+
 }
 
 /* Copy entries into me, starting from {items} and copy {size} entries.
@@ -179,8 +181,9 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::CopyNFrom(MappingType *items, int size, Buf
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_INTERNAL_PAGE_TYPE::Remove(int index) {
   for (int j = index + 1; j < this->GetSize() - 1; ++j) {
-    array[j - 1] = array[j];  // TODO: delete
+    array[j - 1] = array[j];
   }
+  this->SetSize(this->GetSize()-1);
 }
 
 /*
@@ -189,6 +192,7 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::Remove(int index) {
  */
 INDEX_TEMPLATE_ARGUMENTS
 ValueType B_PLUS_TREE_INTERNAL_PAGE_TYPE::RemoveAndReturnOnlyChild() {
+  this->SetSize(0);
   return this->array[0].second;  // not sure
 }
 /*****************************************************************************
@@ -207,7 +211,9 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveAllTo(BPlusTreeInternalPage *recipient,
   for (int i = 0; i < this->GetSize(); ++i) {
     recipient->array[i] = this->array[i];  // use smart pointer
   }
-  // TODO: delete all
+  buffer_pool_manager->UnpinPage(recipient->GetPageId(), true);
+  buffer_pool_manager->UnpinPage(this->GetPageId(), true);
+
   this->SetSize(0);
 }
 
@@ -229,7 +235,6 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveFirstToEndOf(BPlusTreeInternalPage *rec
   for (int j = 1; j < this->GetSize(); ++j) {
     array[j - 1] = array[j];
   }
-  // TODO ee
 }
 
 /* Append an entry at the end.
@@ -238,7 +243,8 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveFirstToEndOf(BPlusTreeInternalPage *rec
  */
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_INTERNAL_PAGE_TYPE::CopyLastFrom(const MappingType &pair, BufferPoolManager *buffer_pool_manager) {
-  //buffer_pool_manager->array[0] = this->array[0];
+
+
 }
 
 /*

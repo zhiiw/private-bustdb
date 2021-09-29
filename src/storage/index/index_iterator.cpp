@@ -12,19 +12,40 @@ namespace bustub {
  * set your own input parameters
  */
 INDEX_TEMPLATE_ARGUMENTS
-INDEXITERATOR_TYPE::IndexIterator() = default;
+INDEXITERATOR_TYPE::IndexIterator(BufferPoolManager *bpm,BPlusTreeLeafPage<KeyType, ValueType, KeyComparator> *leaf) {
+  index=0;
+  this->bpm=bpm;
+  this->leaf=leaf;
+  //itr=ee.begin();
+}
 
 INDEX_TEMPLATE_ARGUMENTS
-INDEXITERATOR_TYPE::~IndexIterator() = default;
+INDEXITERATOR_TYPE::~IndexIterator() {
+};
 
 INDEX_TEMPLATE_ARGUMENTS
-bool INDEXITERATOR_TYPE::isEnd() { throw std::runtime_error("unimplemented"); }
+bool INDEXITERATOR_TYPE::isEnd() {
+  if (this->leaf== nullptr|| this->index== this->leaf->GetMaxSize()){
+    return true;
+  }
+  return false;
+}
 
 INDEX_TEMPLATE_ARGUMENTS
-const MappingType &INDEXITERATOR_TYPE::operator*() { throw std::runtime_error("unimplemented"); }
+const MappingType &INDEXITERATOR_TYPE::operator*() {
+
+}
 
 INDEX_TEMPLATE_ARGUMENTS
-INDEXITERATOR_TYPE &INDEXITERATOR_TYPE::operator++() { throw std::runtime_error("unimplemented"); }
+INDEXITERATOR_TYPE &INDEXITERATOR_TYPE::operator++() {
+  this->index++;
+  if (index>this->leaf->GetSize()){
+
+  } else{
+
+  }
+  return *this;
+}
 
 template class IndexIterator<GenericKey<4>, RID, GenericComparator<4>>;
 

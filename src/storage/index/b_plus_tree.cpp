@@ -82,13 +82,16 @@ void BPLUSTREE_TYPE::StartNewTree(const KeyType &key, const ValueType &value) {
     if (page == nullptr) {
       throw std::bad_alloc();
     }
-    this->root_page_id_ = page->GetPageId();
-    auto leafPage = reinterpret_cast<LeafPage *>(page->GetData());
-    leafPage->Insert(key, value, comparator_);
+
+    auto rootPage = reinterpret_cast<LeafPage *>(page->GetData());
+    rootPage->Init(pageId,INVALID_PAGE_ID);
+    UpdateRootPageId(true);
+    rootPage->Insert(key, value, comparator_);
     UpdateRootPageId(true);
     buffer_pool_manager_->UnpinPage(root_page_id_, true);
 
   } catch (std::bad_alloc &ex) {
+    return;
   }
 }
 
@@ -102,17 +105,17 @@ void BPLUSTREE_TYPE::StartNewTree(const KeyType &key, const ValueType &value) {
  */
 INDEX_TEMPLATE_ARGUMENTS
 bool BPLUSTREE_TYPE::InsertIntoLeaf(const KeyType &key, const ValueType &value, Transaction *transaction) {
-  std::vector<RID> values;
-  values.push_back(value);
-  if (GetValue(key, &values, transaction)) {
+  auto page = reinterpret_cast<LeafPage *>(FindLeafPage(key));
+  ValueType val;
+  if (page->Lookup(key, &val, comparator_)) {
+    buffer_pool_manager_->UnpinPage(page->GetPageId(), false);
     return false;
   }
-  auto page = reinterpret_cast<LeafPage *>(FindLeafPage(key, false));
-  page->Insert(key, value, comparator_);
+  page->Insert(key,value,comparator_);
 
   if (page->GetSize() > page->GetMaxSize() ) {
-    auto newPage = Split(page);
-    InsertIntoParent(page, key, newPage, transaction);
+    auto newPage = static_cast<LeafPage *>(Split(page));
+    InsertIntoParent(page, newPage->KeyAt(0) ,newPage ,transaction);
   }
   buffer_pool_manager_->UnpinPage(page->GetPageId(), true);
   return true;
@@ -158,25 +161,32 @@ INDEX_TEMPLATE_ARGUMENTS
 void BPLUSTREE_TYPE::InsertIntoParent(BPlusTreePage *old_node, const KeyType &key, BPlusTreePage *new_node,
                                       Transaction *transaction) {
   if (old_node->IsRootPage()){
-    reinterpret_cast<InternalPage *>(old_node)->PopulateNewRoot(static_cast<InternalPage *>(new_node)->Lookup(key,comparator_),static_cast<InternalPage *>(new_node)->KeyAt(0),static_cast<InternalPage *>(new_node)->ValueAt(0));
+    page_id_t new_page_id;
+    auto new_page=buffer_pool_manager_->NewPage(&new_page_id);
+    auto rootPage = reinterpret_cast<InternalPage *>(new_page->GetData());
+    rootPage->Init(root_page_id_);
+    rootPage->PopulateNewRoot(old_node->GetPageId(),key,new_node->GetPageId());
     //create new root to contain two page.
-    reinterpret_cast<InternalPage *>(old_node)->SetParentPageId(-1);
+    old_node->SetParentPageId(root_page_id_);
+    new_node->SetParentPageId(root_page_id_);
+    UpdateRootPageId();
+    buffer_pool_manager_->UnpinPage(old_node->GetPageId(), true);
+    buffer_pool_manager_->UnpinPage(new_node->GetPageId(), true);
     return;
-
   }
-  int parentID = old_node->GetParentPageId();
-  auto parentPage = reinterpret_cast<BPlusTreePage *>(this->buffer_pool_manager_->FetchPage(parentID)->GetData());
-  //remember to unpin
-  new_node->SetParentPageId(parentID);
 
-  static_cast<InternalPage *>(old_node)->InsertNodeAfter(old_node->GetPageId(),key,new_node->GetPageId());
+  int parentID = old_node->GetParentPageId();
+  auto parentPage = reinterpret_cast<InternalPage *>(this->buffer_pool_manager_->FetchPage(parentID)->GetData());
+  new_node->SetParentPageId(parentID);
+  buffer_pool_manager_->UnpinPage(new_node->GetPageId(),true);
+
+  parentPage->InsertNodeAfter(old_node->GetPageId(),key,new_node->GetPageId());
   if (parentPage->GetSize()>parentPage->GetMaxSize()){
-    auto new_page = Split(parentPage);
-    InsertIntoParent(parentPage,key,new_page);
+    auto ee= static_cast<InternalPage *>(Split(parentPage));
+    InsertIntoParent(parentPage,ee->KeyAt(0),ee);
   }
   buffer_pool_manager_->UnpinPage(parentID, true);
 
-  // when split use it
 }
 
 /*****************************************************************************
@@ -262,7 +272,10 @@ bool BPLUSTREE_TYPE::AdjustRoot(BPlusTreePage *old_root_node) { return false; }
  * @return : index iterator
  */
 INDEX_TEMPLATE_ARGUMENTS
-INDEXITERATOR_TYPE BPLUSTREE_TYPE::begin() { return INDEXITERATOR_TYPE(); }
+INDEXITERATOR_TYPE BPLUSTREE_TYPE::begin() {
+
+  return INDEXITERATOR_TYPE();
+}
 
 /*
  * Input parameter is low key, find the leaf page that contains the input key

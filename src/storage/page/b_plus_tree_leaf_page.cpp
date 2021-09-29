@@ -108,7 +108,6 @@ int B_PLUS_TREE_LEAF_PAGE_TYPE::Insert(const KeyType &key, const ValueType &valu
   ee.second=value;
   if (comparator(key,array[0].first)<0){//if key is smaller than all
     //rearrange array
-
     temp=array[0];
     array[0]=ee;
     for (int i = 1; i < size; ++i) {
@@ -133,41 +132,9 @@ int B_PLUS_TREE_LEAF_PAGE_TYPE::Insert(const KeyType &key, const ValueType &valu
       }
     }
   }
-  /*
-  std::pair<KeyType,ValueType> temp;
-  std::pair<KeyType,ValueType> temp;
-  ee.first=key;
-  ee.second=value;
-  if (size==this->GetMaxSize()){
-    //split but i can't so...
-  }
-  else{
-    bool flag=false;
-    for (int i = 0; i < size; ++i) {
-
-      if (array[i].second>ee.second){
-        flag= true;
-        //should i manage to re arrange its position?yalei yalei ie seems it need to re arrage it
-        for (int j = i; j < size; ++j) {
-          if (j!=i){
-            ee=temp;
-          }
-          temp=array[j];
-          array[j]=ee;
-        }
-        array[size]=temp;
-        break;
-        //this should have another logic
-      }
-    }
-    if (!flag){
-      array[size]=ee;
-    }
-  }*/
   size++;
   this->SetSize(size);
   return size;
-
 }
 
 /*****************************************************************************
@@ -221,6 +188,7 @@ INDEX_TEMPLATE_ARGUMENTS
 bool B_PLUS_TREE_LEAF_PAGE_TYPE::Lookup(const KeyType &key, ValueType *value, const KeyComparator &comparator) const {
   for (int i = 0; i < this->GetSize(); ++i) {
     if (comparator(this->array[i].first,key)==0){
+      *value= this->array[i].second;
       return true;
     }
   }
@@ -238,6 +206,8 @@ bool B_PLUS_TREE_LEAF_PAGE_TYPE::Lookup(const KeyType &key, ValueType *value, co
  */
 INDEX_TEMPLATE_ARGUMENTS
 int B_PLUS_TREE_LEAF_PAGE_TYPE::RemoveAndDeleteRecord(const KeyType &key, const KeyComparator &comparator) {
+  /*
+  if (Lookup(key))
   int size=this->GetSize();
   for (int i = 0; i < this->GetSize(); ++i) {
     if (comparator(this->array[i].first,key)==0){
@@ -248,7 +218,8 @@ int B_PLUS_TREE_LEAF_PAGE_TYPE::RemoveAndDeleteRecord(const KeyType &key, const 
       return size-1;
     }
   }
-  return this->GetSize();
+  return this->GetSize();*/
+    return 0;
 }
 
 /*****************************************************************************
