@@ -12,8 +12,8 @@ namespace bustub {
  * set your own input parameters
  */
 INDEX_TEMPLATE_ARGUMENTS
-INDEXITERATOR_TYPE::IndexIterator(BufferPoolManager *bpm,BPlusTreeLeafPage<KeyType, ValueType, KeyComparator> *leaf) {
-  index=0;
+INDEXITERATOR_TYPE::IndexIterator(BufferPoolManager *bpm,BPlusTreeLeafPage<KeyType, ValueType, KeyComparator> *leaf,int index) {
+  this->index= index;
   this->bpm=bpm;
   this->leaf=leaf;
   //itr=ee.begin();
@@ -21,7 +21,8 @@ INDEXITERATOR_TYPE::IndexIterator(BufferPoolManager *bpm,BPlusTreeLeafPage<KeyTy
 
 INDEX_TEMPLATE_ARGUMENTS
 INDEXITERATOR_TYPE::~IndexIterator() {
-};
+
+}
 
 INDEX_TEMPLATE_ARGUMENTS
 bool INDEXITERATOR_TYPE::isEnd() {
@@ -33,16 +34,17 @@ bool INDEXITERATOR_TYPE::isEnd() {
 
 INDEX_TEMPLATE_ARGUMENTS
 const MappingType &INDEXITERATOR_TYPE::operator*() {
-
+    return leaf->GetItem(this->index);
 }
 
 INDEX_TEMPLATE_ARGUMENTS
 INDEXITERATOR_TYPE &INDEXITERATOR_TYPE::operator++() {
   this->index++;
-  if (index>this->leaf->GetSize()){
-
-  } else{
-
+  if (this->index>=this->leaf->GetSize()){
+    auto next_id = leaf->GetNextPageId();
+    auto next_page = reinterpret_cast<BPlusTreeLeafPage<KeyType, ValueType, KeyComparator> *>(this->bpm->FetchPage(next_id)->GetData());
+    bpm->UnpinPage(leaf->GetPageId(), false);
+    this->leaf=next_page;
   }
   return *this;
 }

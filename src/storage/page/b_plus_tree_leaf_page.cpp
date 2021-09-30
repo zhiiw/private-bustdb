@@ -33,6 +33,7 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::Init(page_id_t page_id, page_id_t parent_id, in
     this->SetParentPageId(parent_id);
     this->SetPageType(IndexPageType::LEAF_PAGE);
     this->SetSize(0);
+    this->SetNextPageId(-1);
 }
 
 /**
@@ -106,33 +107,16 @@ int B_PLUS_TREE_LEAF_PAGE_TYPE::Insert(const KeyType &key, const ValueType &valu
   std::pair<KeyType,ValueType> ee;
   ee.first=key;
   ee.second=value;
-  if (comparator(key,array[0].first)<0){//if key is smaller than all
-    //rearrange array
-    temp=array[0];
-    array[0]=ee;
-    for (int i = 1; i < size; ++i) {
-      ee=temp;
-      temp=array[i];
-      array[i]=ee;
-    }
-  }else {
-    for (int i = 0; i < size; ++i) {
-      if (comparator(key, array[i].first)<0) {
-        // should i manage to re arrange its position?yalei yalei ie seems it need to re arrage it
-        for (int j = i; j < size; ++j) {
-          if (j != i) {
-            ee = temp;
-          }
-          temp = array[j];
-          array[j] = ee;
-        }
-        array[size] = temp;
-        break;
-        // this should have another logic
-      }
-    }
-  }
   size++;
+
+  int idx= KeyIndex(key,comparator);
+  for (int i = size-1; i > idx; --i) {
+    array[i].first=array[i-1].first;
+    array[i].second=array[i-1].second;
+
+  }
+  array[idx].first=key;
+  array[idx].second=value;
   this->SetSize(size);
   return size;
 }

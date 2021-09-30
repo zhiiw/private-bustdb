@@ -49,7 +49,6 @@ class RID {
     std::stringstream os;
     os << "page_id: " << page_id_;
     os << " slot_num: " << slot_num_ << "\n";
-
     return os.str();
   }
 

@@ -45,7 +45,7 @@ bool BPLUSTREE_TYPE::GetValue(const KeyType &key, std::vector<ValueType> *result
   auto page = reinterpret_cast<LeafPage *>(FindLeafPage(key, false));
   if (page == nullptr) return false;
   result->resize(1);
-  auto isFind = page->Lookup(key, &result->front(), comparator_);
+  auto isFind = page->Lookup(key, (&result->at(0)), comparator_);
   this->buffer_pool_manager_->UnpinPage(page->GetPageId(), false);
   return isFind;
 }
@@ -82,8 +82,8 @@ void BPLUSTREE_TYPE::StartNewTree(const KeyType &key, const ValueType &value) {
     if (page == nullptr) {
       throw std::bad_alloc();
     }
-
     auto rootPage = reinterpret_cast<LeafPage *>(page->GetData());
+    this->root_page_id_=pageId;
     rootPage->Init(pageId,INVALID_PAGE_ID);
     UpdateRootPageId(true);
     rootPage->Insert(key, value, comparator_);
@@ -115,6 +115,8 @@ bool BPLUSTREE_TYPE::InsertIntoLeaf(const KeyType &key, const ValueType &value, 
 
   if (page->GetSize() > page->GetMaxSize() ) {
     auto newPage = static_cast<LeafPage *>(Split(page));
+    page->SetNextPageId(newPage->GetPageId());
+    newPage->SetNextPageId(INVALID_PAGE_ID);
     InsertIntoParent(page, newPage->KeyAt(0) ,newPage ,transaction);
   }
   buffer_pool_manager_->UnpinPage(page->GetPageId(), true);
@@ -273,8 +275,12 @@ bool BPLUSTREE_TYPE::AdjustRoot(BPlusTreePage *old_root_node) { return false; }
  */
 INDEX_TEMPLATE_ARGUMENTS
 INDEXITERATOR_TYPE BPLUSTREE_TYPE::begin() {
+  KeyType key{};
+  LeafPage *leaf = reinterpret_cast<LeafPage *>(FindLeafPage(key,true));
+  INDEXITERATOR_TYPE *it= new INDEXITERATOR_TYPE(this->buffer_pool_manager_, leaf,0);
+  buffer_pool_manager_->UnpinPage(leaf->GetPageId(), false);
 
-  return INDEXITERATOR_TYPE();
+  return *it;
 }
 
 /*
@@ -283,7 +289,15 @@ INDEXITERATOR_TYPE BPLUSTREE_TYPE::begin() {
  * @return : index iterator
  */
 INDEX_TEMPLATE_ARGUMENTS
-INDEXITERATOR_TYPE BPLUSTREE_TYPE::Begin(const KeyType &key) { return INDEXITERATOR_TYPE(); }
+INDEXITERATOR_TYPE BPLUSTREE_TYPE::Begin(const KeyType &key) {
+  LeafPage *leaf = reinterpret_cast<LeafPage *>(FindLeafPage(key,false));
+  assert(leaf!=nullptr);
+  auto index = leaf->KeyIndex(key,comparator_);
+  INDEXITERATOR_TYPE *in = new INDEXITERATOR_TYPE(buffer_pool_manager_,leaf,index);
+  buffer_pool_manager_->UnpinPage(leaf->GetPageId(), false);
+
+  return *in;
+}
 
 /*
  * Input parameter is void, construct an index iterator representing the end
@@ -291,7 +305,21 @@ INDEXITERATOR_TYPE BPLUSTREE_TYPE::Begin(const KeyType &key) { return INDEXITERA
  * @return : index iterator
  */
 INDEX_TEMPLATE_ARGUMENTS
-INDEXITERATOR_TYPE BPLUSTREE_TYPE::end() { return INDEXITERATOR_TYPE(); }
+INDEXITERATOR_TYPE BPLUSTREE_TYPE::end() {
+  KeyType temp{};
+  LeafPage *leaf = reinterpret_cast<LeafPage *>(FindLeafPage(temp,true));
+  page_id_t pageId;
+  while (leaf->GetNextPageId()!=INVALID_PAGE_ID){
+
+    pageId = leaf->GetNextPageId();
+    auto tempId = leaf->GetPageId();
+    buffer_pool_manager_->UnpinPage(tempId, false);
+    leaf  = reinterpret_cast<LeafPage *>(buffer_pool_manager_->FetchPage(pageId)->GetData());
+  }
+  INDEXITERATOR_TYPE *it = new INDEXITERATOR_TYPE(buffer_pool_manager_,leaf,leaf->GetSize());
+  buffer_pool_manager_->UnpinPage(leaf->GetPageId(), false);//##maybe have problem
+  return *it;
+}
 
 /*****************************************************************************
  * UTILITIES AND DEBUG
@@ -353,7 +381,7 @@ void BPLUSTREE_TYPE::InsertFromFile(const std::string &file_name, Transaction *t
   while (input) {
     input >> key;
 
-    KeyType index_key;
+    KeyType index_key{};
     index_key.SetFromInteger(key);
     RID rid(key);
     Insert(index_key, rid, transaction);
