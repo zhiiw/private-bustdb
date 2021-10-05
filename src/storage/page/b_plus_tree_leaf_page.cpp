@@ -215,10 +215,13 @@ int B_PLUS_TREE_LEAF_PAGE_TYPE::RemoveAndDeleteRecord(const KeyType &key, const 
  */
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_LEAF_PAGE_TYPE::MoveAllTo(BPlusTreeLeafPage *recipient) {
+  assert(recipient!=nullptr);
+  int startIndex = recipient->GetSize();
   for (int i = 0; i < this->GetSize(); ++i) {
-    recipient->array[i]=this->array[i];//use smart pointer
+    recipient->array[startIndex+i]=this->array[i];//use smart pointer
   }
-  //TODO: delete all
+  recipient->SetSize(this->GetSize());
+  recipient->SetNextPageId(this->GetNextPageId());
   this->SetSize(0);
 }
 
