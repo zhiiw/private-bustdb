@@ -190,20 +190,16 @@ bool B_PLUS_TREE_LEAF_PAGE_TYPE::Lookup(const KeyType &key, ValueType *value, co
  */
 INDEX_TEMPLATE_ARGUMENTS
 int B_PLUS_TREE_LEAF_PAGE_TYPE::RemoveAndDeleteRecord(const KeyType &key, const KeyComparator &comparator) {
-  /*
-  if (Lookup(key))
-  int size=this->GetSize();
-  for (int i = 0; i < this->GetSize(); ++i) {
-    if (comparator(this->array[i].first,key)==0){
-      for (int j = i+1; j < this->GetSize()-1; ++j) {
-        array[j-1]=array[j];
-      }
-      this->SetSize(size-1);
-      return size-1;
-    }
+  int index = KeyIndex(key,comparator);
+  if(index<0|| comparator(KeyAt(index),key)!=0){
+    return GetSize();
   }
-  return this->GetSize();*/
-    return 0;
+
+  for (int i = index; i < GetSize()-1; ++i) {
+    array[i]=array[i+1];
+  }
+  this->IncreaseSize(-1);
+  return this->GetSize();
 }
 
 /*****************************************************************************
@@ -220,7 +216,7 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::MoveAllTo(BPlusTreeLeafPage *recipient) {
   for (int i = 0; i < this->GetSize(); ++i) {
     recipient->array[startIndex+i]=this->array[i];//use smart pointer
   }
-  recipient->SetSize(this->GetSize());
+  recipient->IncreaseSize(this->GetSize());
   recipient->SetNextPageId(this->GetNextPageId());
   this->SetSize(0);
 }
@@ -234,9 +230,14 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::MoveAllTo(BPlusTreeLeafPage *recipient) {
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_LEAF_PAGE_TYPE::MoveFirstToEndOf(BPlusTreeLeafPage *recipient) {
   recipient->array[this->GetSize()]=this->array[0];
+  recipient->IncreaseSize(1);
+
   for (int j = 1; j < this->GetSize(); ++j) {
     array[j-1]=array[j];
   }
+
+  this->IncreaseSize(-1);
+
 }
 
 /*
