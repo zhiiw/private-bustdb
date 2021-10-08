@@ -231,12 +231,9 @@ INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_LEAF_PAGE_TYPE::MoveFirstToEndOf(BPlusTreeLeafPage *recipient) {
   recipient->array[this->GetSize()]=this->array[0];
   recipient->IncreaseSize(1);
-
-  for (int j = 1; j < this->GetSize(); ++j) {
-    array[j-1]=array[j];
-  }
-
+  MappingType ee{array[0].first,array[0].second};
   this->IncreaseSize(-1);
+  memmove(array,array+1,GetSize());
 
 }
 
@@ -253,8 +250,6 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::CopyLastFrom(const MappingType &item) {
  */
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_LEAF_PAGE_TYPE::MoveLastToFrontOf(BPlusTreeLeafPage *recipient) {
-  //TODO : bujizhezuo
-
   int size= this->GetSize();
   std::pair<KeyType,ValueType> temp;
   std::pair<KeyType,ValueType> ee;
