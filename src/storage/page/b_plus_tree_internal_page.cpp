@@ -72,7 +72,6 @@ int B_PLUS_TREE_INTERNAL_PAGE_TYPE::ValueIndex(const ValueType &value) const {
 INDEX_TEMPLATE_ARGUMENTS
 ValueType B_PLUS_TREE_INTERNAL_PAGE_TYPE::ValueAt(int index) const {
   assert(index >= 0 && index < GetSize());
-
   return this->array[index].second;
 }
 
@@ -166,7 +165,7 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveHalfTo(BPlusTreeInternalPage *recipient
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_INTERNAL_PAGE_TYPE::CopyNFrom(MappingType *items, int size, BufferPoolManager *buffer_pool_manager) {
   for (int i = 0; i < size; ++i) {  // dont know what it mean
-    this->array[i] = items[i];      // TODO
+    this->array[i] = items[i];
   }
 }
 
@@ -183,7 +182,7 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::Remove(int index) {
   for (int j = index + 1; j < this->GetSize(); ++j) {
     array[j - 1] = array[j];
   }
-  this->SetSize(this->GetSize()-1);
+  this->IncreaseSize(-1);
 }
 
 /*
@@ -209,6 +208,7 @@ INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveAllTo(BPlusTreeInternalPage *recipient, const KeyType &middle_key,
                                                BufferPoolManager *buffer_pool_manager) {
   for (int i = 0; i < this->GetSize(); ++i) {
+    //todo: check
     recipient->array[i] = this->array[i];  // use smart pointer
   }
   buffer_pool_manager->UnpinPage(recipient->GetPageId(), true);
@@ -244,7 +244,8 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveFirstToEndOf(BPlusTreeInternalPage *rec
  */
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_INTERNAL_PAGE_TYPE::CopyLastFrom(const MappingType &pair, BufferPoolManager *buffer_pool_manager) {
-
+  this->array[GetSize() - 1] =pair;
+  this->IncreaseSize(1);
 
 }
 

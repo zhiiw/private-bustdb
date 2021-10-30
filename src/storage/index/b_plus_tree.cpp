@@ -203,7 +203,18 @@ void BPLUSTREE_TYPE::InsertIntoParent(BPlusTreePage *old_node, const KeyType &ke
  */
 INDEX_TEMPLATE_ARGUMENTS
 void BPLUSTREE_TYPE::Remove(const KeyType &key, Transaction *transaction) {
-  if (IsEmpty()) return;
+  if (IsEmpty()) {
+    return;
+  }
+  auto leafPage =  FindLeafPage(key,false);
+  auto leaf=reinterpret_cast<LeafPage *>(leafPage->GetData());
+  int curSize=leaf->RemoveAndDeleteRecord(key,comparator_);
+  if (curSize<leaf.GetMaxSize()){
+    CoalesceOrRedistribute(leaf,transaction);
+  }
+  this->buffer_pool_manager_->UnpinPage(leaf->GetParentPageId(),true);
+
+
 
 }
 
@@ -217,7 +228,11 @@ void BPLUSTREE_TYPE::Remove(const KeyType &key, Transaction *transaction) {
 INDEX_TEMPLATE_ARGUMENTS
 template <typename N>
 bool BPLUSTREE_TYPE::CoalesceOrRedistribute(N *node, Transaction *transaction) {
-  return false;
+  if(node->IsRootPage()){
+    return AdjustRoot(node);
+  }
+  N *node2;
+
 }
 
 /*
@@ -237,7 +252,7 @@ template <typename N>
 bool BPLUSTREE_TYPE::Coalesce(N **neighbor_node, N **node,
                               BPlusTreeInternalPage<KeyType, page_id_t, KeyComparator> **parent, int index,
                               Transaction *transaction) {
-  return false;
+
 }
 
 /*
@@ -251,7 +266,15 @@ bool BPLUSTREE_TYPE::Coalesce(N **neighbor_node, N **node,
  */
 INDEX_TEMPLATE_ARGUMENTS
 template <typename N>
-void BPLUSTREE_TYPE::Redistribute(N *neighbor_node, N *node, int index) {}
+void BPLUSTREE_TYPE::Redistribute(N *neighbor_node, N *node, int index) {
+  if (index == 0) {
+    neighbor_node->MoveFirstToEndOf(node,buffer_pool_manager_);
+  } else{
+    neighbor_node->MoveLastToFrontOf(node,buffer_pool_manager_);
+  }
+  buffer_pool_manager_->UnpinPage(node->GetPageId());
+  buffer_pool_manager_->UnpinPage(neighbor_node->GetPageId());
+}
 /*
  * Update root page if necessary
  * NOTE: size of root page can be less than min size and this method is only
@@ -263,7 +286,29 @@ void BPLUSTREE_TYPE::Redistribute(N *neighbor_node, N *node, int index) {}
  * happend
  */
 INDEX_TEMPLATE_ARGUMENTS
-bool BPLUSTREE_TYPE::AdjustRoot(BPlusTreePage *old_root_node) { return false; }
+bool BPLUSTREE_TYPE::AdjustRoot(BPlusTreePage *old_root_node) {
+  if (old_root_node->IsLeafPage()){
+    assert(old_root_node->GetSize()==0);
+    assert(old_root_node->GetParentPageId()==INVALID_PAGE_ID);
+    buffer_pool_manager_->UnpinPage(old_root_node->GetPageId());
+    buffer_pool_manager_->DeletePage(old_root_node->GetPageId());
+    UpdateRootPageId();
+    return true;
+  }
+  if (old_root_node->GetSize()==1){
+    auto root = reinterpret_cast<InternalPage *>(old_root_node);
+    auto newId = root->RemoveAndReturnOnlyChild();
+    root_page_id_=newId;
+    UpdateRootPageId();
+    auto rootPage =reinterpret_cast<InternalPage *>(buffer_pool_manager_->FetchPage(newId)->GetData());
+    rootPage->SetParentPageId(INVALID_PAGE_ID);
+    buffer_pool_manager_->UnpinPage(root_page_id_,true);
+    buffer_pool_manager_->UnpinPage(old_root_node->GetPageId(),false);
+    buffer_pool_manager_->DeletePage(old_root_node->GetPageId());
+  }
+  return false;
+
+}
 
 /*****************************************************************************
  * INDEX ITERATOR
