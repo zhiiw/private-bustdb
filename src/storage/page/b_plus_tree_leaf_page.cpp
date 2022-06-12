@@ -233,7 +233,7 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::MoveFirstToEndOf(BPlusTreeLeafPage *recipient) 
   recipient->IncreaseSize(1);
   MappingType ee{array[0].first,array[0].second};
   this->IncreaseSize(-1);
-  memmove(array,array+1,GetSize());
+//  memmove(array,array+1,GetSize());
 
 }
 

@@ -231,7 +231,7 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveAllTo(BPlusTreeInternalPage *recipient,
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveFirstToEndOf(BPlusTreeInternalPage *recipient, const KeyType &middle_key,
                                                       BufferPoolManager *buffer_pool_manager) {
-  recipient->IncreaseSize(1;
+//  recipient->IncreaseSize(1;
   recipient->array[recipient->GetSize()] = this->array[0];
   for (int j = 1; j < this->GetSize(); ++j) {
     array[j - 1] = array[j];

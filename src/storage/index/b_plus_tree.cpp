@@ -209,13 +209,10 @@ void BPLUSTREE_TYPE::Remove(const KeyType &key, Transaction *transaction) {
   auto leafPage =  FindLeafPage(key,false);
   auto leaf=reinterpret_cast<LeafPage *>(leafPage->GetData());
   int curSize=leaf->RemoveAndDeleteRecord(key,comparator_);
-  if (curSize<leaf.GetMaxSize()){
+  if (curSize<leaf->GetMaxSize()){
     CoalesceOrRedistribute(leaf,transaction);
   }
   this->buffer_pool_manager_->UnpinPage(leaf->GetParentPageId(),true);
-
-
-
 }
 
 /*
@@ -231,7 +228,22 @@ bool BPLUSTREE_TYPE::CoalesceOrRedistribute(N *node, Transaction *transaction) {
   if(node->IsRootPage()){
     return AdjustRoot(node);
   }
-  N *node2;
+  return false;
+  //get the slibing page
+//  N *node2;
+//  int pageId = node->GetParentPageId();
+//  auto parent = reinterpret_cast<InternalPage *>(this->buffer_pool_manager_->FetchPage(node->GetParentPageId())->GetData());
+////  parent->K
+//  for (int i = 0; i < ; ++i) {
+//
+//  }
+//  if (node2->GetSize()+node->GetSize()>node2->GetMaxSize()){
+//    Redistribute(node2,node,);//
+//  }else{
+//    auto parent = reinterpret_cast<InternalPage *>(this->buffer_pool_manager_->FetchPage(node->GetParentPageId())->GetData());
+//
+//    Coalesce((*node2),(*node),(*parent),transaction);
+//  }
 
 }
 
@@ -252,7 +264,10 @@ template <typename N>
 bool BPLUSTREE_TYPE::Coalesce(N **neighbor_node, N **node,
                               BPlusTreeInternalPage<KeyType, page_id_t, KeyComparator> **parent, int index,
                               Transaction *transaction) {
-
+    auto page = reinterpret_cast<N *>(this->buffer_pool_manager_->FetchPage(parent->GetPageId())->GetData());
+    auto page2 = reinterpret_cast<N *>(this->buffer_pool_manager_->FetchPage(neighbor_node->GetPageId())->GetData());
+    return false;
+//  node->MoveAllTo(neighbor_node)
 }
 
 /*
@@ -290,7 +305,7 @@ bool BPLUSTREE_TYPE::AdjustRoot(BPlusTreePage *old_root_node) {
   if (old_root_node->IsLeafPage()){
     assert(old_root_node->GetSize()==0);
     assert(old_root_node->GetParentPageId()==INVALID_PAGE_ID);
-    buffer_pool_manager_->UnpinPage(old_root_node->GetPageId());
+    buffer_pool_manager_->UnpinPage(old_root_node->GetPageId(),false);
     buffer_pool_manager_->DeletePage(old_root_node->GetPageId());
     UpdateRootPageId();
     return true;
