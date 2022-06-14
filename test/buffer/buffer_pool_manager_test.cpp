@@ -15,7 +15,7 @@
 #include <random>
 #include <string>
 #include "gtest/gtest.h"
-/*
+
 namespace bustub {
 
 // NOLINTNEXTLINE
@@ -143,4 +143,3 @@ TEST(BufferPoolManagerTest, SampleTest) {
 }
 
 }  // namespace bustub
-*/

@@ -339,7 +339,6 @@ INDEXITERATOR_TYPE BPLUSTREE_TYPE::begin() {
   LeafPage *leaf = reinterpret_cast<LeafPage *>(FindLeafPage(key,true));
   INDEXITERATOR_TYPE *it= new INDEXITERATOR_TYPE(this->buffer_pool_manager_, leaf,0);
   buffer_pool_manager_->UnpinPage(leaf->GetPageId(), false);
-
   return *it;
 }
 
