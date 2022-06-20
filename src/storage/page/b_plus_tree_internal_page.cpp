@@ -281,19 +281,12 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveLastToFrontOf(BPlusTreeInternalPage *re
  */
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_INTERNAL_PAGE_TYPE::CopyFirstFrom(const MappingType &pair, BufferPoolManager *buffer_pool_manager) {
-  int size = this->GetSize();
-  std::pair<KeyType, ValueType> temp;
-  std::pair<KeyType, ValueType> ee;
-  ee = this->array[this->GetSize() - 1];
-  //bool flag = false;
-  // rearrange array
-  temp = array[0];
-  array[0] = pair;
-  for (int i = 1; i < size; ++i) {
-    ee = temp;
-    temp = array[i];
-    array[i] = ee;
+  for(int i=this->GetSize()-1;i>=0;i--){
+    this->array[i+1]=this->array[i];
   }
+  this->array[0] = pair;
+  this->SetSize(this->GetSize()+1);
+  this->Pa
 }
 
 // valuetype for internalNode should be page id_t

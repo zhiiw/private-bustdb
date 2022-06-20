@@ -103,12 +103,7 @@ INDEX_TEMPLATE_ARGUMENTS
 int B_PLUS_TREE_LEAF_PAGE_TYPE::Insert(const KeyType &key, const ValueType &value, const KeyComparator &comparator) {
   //this is the core function
   int size= this->GetSize();
-  std::pair<KeyType,ValueType> temp;
-  std::pair<KeyType,ValueType> ee;
-  ee.first=key;
-  ee.second=value;
   size++;
-
   int idx= KeyIndex(key,comparator);
   for (int i = size-1; i > idx; --i) {
     array[i].first=array[i-1].first;
@@ -155,7 +150,7 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::MoveHalfTo(BPlusTreeLeafPage *recipient) {
  */
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_LEAF_PAGE_TYPE::CopyNFrom(MappingType *items, int size) {
-  for (int i = 0; i < size; ++i) {
+  for (int i = 0; i < this->GetSize(); ++i) {
     this->array[i]=items[i];
   }
 }
@@ -229,10 +224,8 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::MoveAllTo(BPlusTreeLeafPage *recipient) {
  */
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_LEAF_PAGE_TYPE::MoveFirstToEndOf(BPlusTreeLeafPage *recipient) {
-  recipient->array[this->GetSize()]=this->array[0];
-  recipient->IncreaseSize(1);
-  MappingType ee{array[0].first,array[0].second};
-  this->IncreaseSize(-1);
+  recipient->CopyLastFrom(this->array[this->GetSize()-1]);
+  this->SetSize(this->GetSize()-1);
 //  memmove(array,array+1,GetSize());
 
 }
@@ -243,6 +236,8 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::MoveFirstToEndOf(BPlusTreeLeafPage *recipient) 
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_LEAF_PAGE_TYPE::CopyLastFrom(const MappingType &item) {
   this->array[this->GetSize()]=item;
+  int size = this->GetSize();
+  this->SetSize(size+1);
 }
 
 /*
@@ -250,21 +245,9 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::CopyLastFrom(const MappingType &item) {
  */
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_LEAF_PAGE_TYPE::MoveLastToFrontOf(BPlusTreeLeafPage *recipient) {
-  int size= this->GetSize();
-  std::pair<KeyType,ValueType> temp;
-  std::pair<KeyType,ValueType> ee;
-  ee=this->array[this->GetSize()-1];
-  //bool flag= false;
-  //rearrange array
-  temp=array[0];
-  array[0]=ee;
-  for (int i = 1; i < size; ++i) {
-    ee=temp;
-    temp=array[i];
-    array[i]=ee;
-
-  }
-  this->SetSize(this->GetSize()+1);
+  int size = this->GetSize();
+  recipient->CopyFirstFrom(this->array[size-1]);
+  this->SetSize(size-1);
 }
 
 /*
@@ -272,19 +255,11 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::MoveLastToFrontOf(BPlusTreeLeafPage *recipient)
  */
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_LEAF_PAGE_TYPE::CopyFirstFrom(const MappingType &item) {
-  int size= this->GetSize();
-  std::pair<KeyType,ValueType> temp;
-  std::pair<KeyType,ValueType> ee;
-  ee=this->array[this->GetSize()-1];
-  //bool flag= false;
-  //rearrange array
-  temp=array[0];
-  array[0]=item;
-  for (int i = 1; i < size; ++i) {
-    ee=temp;
-    temp=array[i];
-    array[i]=ee;
+  for(int i=this->GetSize()-1;i>=0;i--){
+    this->array[i+1]=this->array[i];
   }
+  this->array[0] = item;
+  this->SetSize(this->GetSize()+1);
 }
 
 template class BPlusTreeLeafPage<GenericKey<4>, RID, GenericComparator<4>>;

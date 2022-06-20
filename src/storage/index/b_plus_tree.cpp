@@ -62,7 +62,7 @@ bool BPLUSTREE_TYPE::GetValue(const KeyType &key, std::vector<ValueType> *result
  */
 INDEX_TEMPLATE_ARGUMENTS
 bool BPLUSTREE_TYPE::Insert(const KeyType &key, const ValueType &value, Transaction *transaction) {
-  if (IsEmpty()) {
+  if (IsEmpty()) {// lele wobuhaoshuo nishi nigger????
     StartNewTree(key, value);
     return true;
   }
@@ -479,11 +479,9 @@ void BPLUSTREE_TYPE::ToGraph(BPlusTreePage *page, BufferPoolManager *bpm, std::o
     // Print node name
     out << leaf_prefix << leaf->GetPageId();
     // Print node properties
-    out << "[shape=plain color=green niude wobuhaoshuo wochao qingzhouqueshuang a ";
-    // Print data of the node
+    out << "[shape=plain color=green a ";    // Print data of the node
     out << "label=<<TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\" CELLPADDING=\"4\">\n";
-    // Print data
-    out << "<TR><TD COLSPAN=\"" << leaf->GetSize() << "\">P=" << leaf->GetPageId() << "</TD></TR>\n";
+    // Print datadsafasdfas=-3adfjlasfc,xmznvn,mjaiodsfioweuorqasdfsdafadf  asdafdasf12fa    out << "<TR><TD COLSPAN=\"" << leaf->GetSize() << "\">P=" << leaf->GetPageId() << "</TD></TR>\n";
     out << "<TR><TD COLSPAN=\"" << leaf->GetSize() << "\">"
         << "max_size=" << leaf->GetMaxSize() << ",min_size=" << leaf->GetMinSize() << "</TD></TR>\n";
     out << "<TR>";
@@ -506,7 +504,7 @@ void BPLUSTREE_TYPE::ToGraph(BPlusTreePage *page, BufferPoolManager *bpm, std::o
     }
   } else {
     InternalPage *inner = reinterpret_cast<InternalPage *>(page);
-    // Print node name
+    // Print node nameasdfjjafjsdkadskjfa;sdlja;sdkfj ioef  e  a        hujhjkh `
     out << internal_prefix << inner->GetPageId();
     // Print node properties
     out << "[shape=plain color=pink ";  // why not?
