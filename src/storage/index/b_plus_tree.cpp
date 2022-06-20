@@ -369,7 +369,6 @@ INDEXITERATOR_TYPE BPLUSTREE_TYPE::end() {
   LeafPage *leaf = reinterpret_cast<LeafPage *>(FindLeafPage(temp,true));
   page_id_t pageId;
   while (leaf->GetNextPageId()!=INVALID_PAGE_ID){
-
     pageId = leaf->GetNextPageId();
     auto tempId = leaf->GetPageId();
     buffer_pool_manager_->UnpinPage(tempId, false);
@@ -480,7 +479,7 @@ void BPLUSTREE_TYPE::ToGraph(BPlusTreePage *page, BufferPoolManager *bpm, std::o
     // Print node name
     out << leaf_prefix << leaf->GetPageId();
     // Print node properties
-    out << "[shape=plain color=green ";
+    out << "[shape=plain color=green niude wobuhaoshuo wochao qingzhouqueshuang a ";
     // Print data of the node
     out << "label=<<TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\" CELLPADDING=\"4\">\n";
     // Print data
