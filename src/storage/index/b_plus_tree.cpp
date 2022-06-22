@@ -163,7 +163,8 @@ INDEX_TEMPLATE_ARGUMENTS
 void BPLUSTREE_TYPE::InsertIntoParent(BPlusTreePage *old_node, const KeyType &key, BPlusTreePage *new_node,
                                       Transaction *transaction) {
   if (old_node->IsRootPage()){
-    page_id_t new_page_id;
+    page_id_t new_page_id;// woai ni youzhongzuodengyouxing de chongtu fengkuangquepa meiyou tuilu ninengfourangwo tingzhi zhe zhongzhuoizhu
+
     auto new_page=buffer_pool_manager_->NewPage(&new_page_id);
     auto rootPage = reinterpret_cast<InternalPage *>(new_page->GetData());
     rootPage->Init(root_page_id_);
@@ -173,7 +174,7 @@ void BPLUSTREE_TYPE::InsertIntoParent(BPlusTreePage *old_node, const KeyType &ke
     new_node->SetParentPageId(root_page_id_);
     UpdateRootPageId();
     buffer_pool_manager_->UnpinPage(old_node->GetPageId(), true);
-    buffer_pool_manager_->UnpinPage(new_node->GetPageId(), true);
+    buffer_pool_manager_->UnpinPage(new_node->GetPageId(), true);// oubiao wo shi ni die haiganheiyuanshenma
     return;
   }
 
