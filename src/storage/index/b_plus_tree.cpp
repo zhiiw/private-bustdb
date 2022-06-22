@@ -231,10 +231,26 @@ bool BPLUSTREE_TYPE::CoalesceOrRedistribute(N *node, Transaction *transaction) {
   }
   return false;
   //get the slibing page
-//  N *node2;
-//  int pageId = node->GetParentPageId();
-//  auto parent = reinterpret_cast<InternalPage *>(this->buffer_pool_manager_->FetchPage(node->GetParentPageId())->GetData());
-////  parent->K
+  N *node2;
+  int pageId = node->GetParentPageId();
+  auto parent = reinterpret_cast<InternalPage *>(this->buffer_pool_manager_->FetchPage(node->GetParentPageId())->GetData());
+  int parentSize =  parent->GetSize();
+  // to find slibing
+  int index = parent->ValueIndex(pageId);
+  int slibing = index -1;
+  if(slibing==0){
+    slibing=index+1;
+  }
+  node2 = reinterpret_cast<N *>(buffer_pool_manager_->FetchPage(parent->ValueAt(slibing)));
+  buffer_pool_manager_->UnpinPage(parent->GetPageId(),false);
+  if(node->GetSize()+node2->GetSize()<=node->GetMaxSize()){
+    if(index==0)
+      swap(node,node2);
+    auto rmIndex=parent->ValueIndex(node->GetPageId());
+    Coalesce(&node2,&node,&parent,rmIndex,transaction);
+
+  }
+  //  parent->K
 //  for (int i = 0; i < ; ++i) {
 //
 //  }
