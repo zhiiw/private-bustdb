@@ -248,8 +248,14 @@ bool BPLUSTREE_TYPE::CoalesceOrRedistribute(N *node, Transaction *transaction) {
       swap(node,node2);
     auto rmIndex=parent->ValueIndex(node->GetPageId());
     Coalesce(&node2,&node,&parent,rmIndex,transaction);
-
+    buffer_pool_manager_->UnpinPage(parent->GetPageId(),true);
+    buffer_pool_manager_->UnpinPage(node2->GetPageId(),true);
+    return true ;
   }
+  int nodeInParentIndex = parent->ValueIndex(node->GetPageId());
+  Redistribute(node2,node,nodeInParentIndex);
+  buffer_pool_manager_->UnpinPage(parent->GetPageId(),true);
+  return false;
   //  parent->K
 //  for (int i = 0; i < ; ++i) {
 //
@@ -273,7 +279,7 @@ bool BPLUSTREE_TYPE::CoalesceOrRedistribute(N *node, Transaction *transaction) {
  * @param   neighbor_node      sibling page of input "node"
  * @param   node               input from method coalesceOrRedistribute()
  * @param   parent             parent page of input "node"
- * @return  true means parent node should be deleted, false means no deletion
+ * @return  true means  node should be deleted, false means no deletion
  * happend
  */
 INDEX_TEMPLATE_ARGUMENTS
@@ -281,10 +287,26 @@ template <typename N>
 bool BPLUSTREE_TYPE::Coalesce(N **neighbor_node, N **node,
                               BPlusTreeInternalPage<KeyType, page_id_t, KeyComparator> **parent, int index,
                               Transaction *transaction) {
-    auto page = reinterpret_cast<N *>(this->buffer_pool_manager_->FetchPage(parent->GetPageId())->GetData());
-    auto page2 = reinterpret_cast<N *>(this->buffer_pool_manager_->FetchPage(neighbor_node->GetPageId())->GetData());
-    return false;
-//  node->MoveAllTo(neighbor_node)
+    assert(*neighbor_node != nullptr);
+    assert(*node != nullptr);
+    if((*node)->IsLeafPage()){
+      auto leaf = reinterpret_cast<LeafPage *>(*node);
+      auto leaf2 = reinterpret_cast<LeafPage *>(*neighbor_node);
+      leaf->MoveAllTo(leaf2);
+      leaf2->SetNextPageId(leaf->GetNextPageId());
+    }else{
+      auto internal = reinterpret_cast<InternalPage *>(*node);
+      auto internal2 = reinterpret_cast<InternalPage *>(*neighbor_node);
+      internal->MoveAllTo(internal2,(*parent)->KeyAt(index),buffer_pool_manager_);
+    }
+    buffer_pool_manager_->UnpinPage((*node)->GetPageId(),true);
+    buffer_pool_manager_->DeletePage((*node)->GetPageId());
+    (*parent)->Remove(index);
+    assert((*parent)!=nullptr);
+    if((*parent)->GetSize()<=(*parent)->GetMinSize()){
+      return CoalesceOrRedistribute((*parent),transaction);
+    }
+    return true;
 }
 
 /*

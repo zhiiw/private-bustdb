@@ -207,13 +207,21 @@ ValueType B_PLUS_TREE_INTERNAL_PAGE_TYPE::RemoveAndReturnOnlyChild() {
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveAllTo(BPlusTreeInternalPage *recipient, const KeyType &middle_key,
                                                BufferPoolManager *buffer_pool_manager) {
+  int length = this->GetSize();
+  assert(length > 0);
+  assert(recipient!=nullptr);
+  int recipient_length = recipient->GetSize();
+  this->SetKeyAt(0, middle_key);
+  for (int i = 0; i < length; ++i) {
+    recipient->array[recipient_length + i] = this->array[i];
+    BPlusTreePage *page = reinterpret_cast<BPlusTreePage *>(buffer_pool_manager->FetchPage(recipient->array[recipient_length + i].second)->GetData());
+    page->SetParentPageId(recipient->GetPageId());
+    buffer_pool_manager->UnpinPage(array[i].second, true);
   for (int i = 0; i < this->GetSize(); ++i) {
     //todo: check
     recipient->array[i] = this->array[i];  // use smart pointer
   }
-  buffer_pool_manager->UnpinPage(recipient->GetPageId(), true);
-  buffer_pool_manager->UnpinPage(this->GetPageId(), true);
-
+  recipient->SetSize(recipient_length + length);
   this->SetSize(0);
 }
 
