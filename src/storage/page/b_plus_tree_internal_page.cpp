@@ -124,17 +124,14 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::PopulateNewRoot(const ValueType &old_value,
 INDEX_TEMPLATE_ARGUMENTS
 int B_PLUS_TREE_INTERNAL_PAGE_TYPE::InsertNodeAfter(const ValueType &old_value, const KeyType &new_key,
                                                     const ValueType &new_value) {
-  int idx = ValueIndex(old_value) + 1;  // get the index position for the new node
-  assert(idx > 0);
-  IncreaseSize(1);
-  int curSize = GetSize();
-  for (int i = curSize - 1; i > idx; i--) {
-    array[i].first = array[i - 1].first;
-    array[i].second = array[i - 1].second;
+  int index = ValueIndex(old_value);
+  for (int i = GetSize(); i > index + 1; i--) {
+    array[i] = array[i - 1];
   }
-  array[idx].first = new_key;
-  array[idx].second = new_value;
-  return curSize;
+  array[index + 1] = MappingType(new_key, new_value);
+  IncreaseSize(1);
+  return GetSize();
+
 }
 
 /*****************************************************************************
@@ -217,9 +214,6 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveAllTo(BPlusTreeInternalPage *recipient,
     BPlusTreePage *page = reinterpret_cast<BPlusTreePage *>(buffer_pool_manager->FetchPage(recipient->array[recipient_length + i].second)->GetData());
     page->SetParentPageId(recipient->GetPageId());
     buffer_pool_manager->UnpinPage(array[i].second, true);
-  for (int i = 0; i < this->GetSize(); ++i) {
-    //todo: check
-    recipient->array[i] = this->array[i];  // use smart pointer
   }
   recipient->SetSize(recipient_length + length);
   this->SetSize(0);
@@ -294,7 +288,6 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::CopyFirstFrom(const MappingType &pair, Buff
   }
   this->array[0] = pair;
   this->SetSize(this->GetSize()+1);
-  this->Pa
 }
 
 // valuetype for internalNode should be page id_t
