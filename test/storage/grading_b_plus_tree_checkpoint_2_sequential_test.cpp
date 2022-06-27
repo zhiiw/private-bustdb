@@ -349,7 +349,12 @@ TEST(BPlusTreeTests, ScaleTest) {
     int64_t value = key & 0xFFFFFFFF;
     rid.Set(static_cast<int32_t>(key >> 32), value);
     index_key.SetFromInteger(key);
+    if(key==254){
+      LOG_INFO("# key: %ld", key);
+    }
     tree.Insert(index_key, rid, transaction);
+
+
   }
   std::vector<RID> rids;
   for (auto key : keys) {
