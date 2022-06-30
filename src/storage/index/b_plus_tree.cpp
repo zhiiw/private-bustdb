@@ -83,7 +83,7 @@ void BPLUSTREE_TYPE::StartNewTree(const KeyType &key, const ValueType &value) {
     }
     auto rootPage = reinterpret_cast<LeafPage *>(page->GetData());
     this->root_page_id_=pageId;
-    rootPage->Init(pageId,INVALID_PAGE_ID);
+    rootPage->Init(pageId,INVALID_PAGE_ID,leaf_max_size_);
     UpdateRootPageId(true);
     rootPage->Insert(key, value, comparator_);
     UpdateRootPageId(true);
@@ -111,12 +111,11 @@ bool BPLUSTREE_TYPE::InsertIntoLeaf(const KeyType &key, const ValueType &value, 
     return false;
   }
   page->Insert(key,value,comparator_);
-
-  if (page->GetSize() > page->GetMaxSize() ) {
-    auto newPage = static_cast<LeafPage *>(Split(page));
-    page->SetNextPageId(newPage->GetPageId());
-    newPage->SetNextPageId(INVALID_PAGE_ID);
-    InsertIntoParent(page, newPage->KeyAt(0) ,newPage ,transaction);
+  int pageSize= page->GetSize();
+  int maxSize= page->GetMaxSize();
+  if (pageSize>maxSize) {
+    LeafPage * newLeaf = Split(page);
+    InsertIntoParent(page,newLeaf->KeyAt(0),newLeaf,transaction);
   }
   buffer_pool_manager_->UnpinPage(page->GetPageId(), true);
   return true;
@@ -166,7 +165,7 @@ void BPLUSTREE_TYPE::InsertIntoParent(BPlusTreePage *old_node, const KeyType &ke
 
     auto new_page=buffer_pool_manager_->NewPage(&new_page_id);
     auto rootPage = reinterpret_cast<InternalPage *>(new_page->GetData());
-    rootPage->Init(root_page_id_);
+    rootPage->Init(root_page_id_,internal_max_size_);
     rootPage->PopulateNewRoot(old_node->GetPageId(),key,new_node->GetPageId());
     //create new root to contain two page.
     old_node->SetParentPageId(root_page_id_);
