@@ -14,103 +14,60 @@
 
 namespace bustub {
 
-LRUReplacer::LRUReplacer(size_t num_pages) {
-  this->num_pages = num_pages;  // capacity
-  this->size = 0;
-  first = new Node();
-  end = new Node();
-  first->next = end;
-  end->prev = first;
-  first->prev = nullptr;
-  end->next = nullptr;
-  end->val = -1;
-  first->val = -2;
+LRUReplacer::LRUReplacer(size_t num_pages) : capacity{num_pages} {}
 
-}
-
-LRUReplacer::~LRUReplacer() {
-  lru_latchs.lock();
-  Node *temp = end;
-  Node *newerOne;
-  while (!temp->prev) {
-    newerOne = temp->prev;
-    delete temp;
-    temp = newerOne;
-  }
-  lru_latchs.unlock();
-}
+LRUReplacer::~LRUReplacer() = default;
 
 bool LRUReplacer::Victim(frame_id_t *frame_id) {
-  lru_latchs.lock();
+  const std::lock_guard<mutex_t> guard(mutex);
 
-  if (size == 0) {
-    frame_id = nullptr;
-    lru_latchs.unlock();
+  if (lst.empty()) {
     return false;
   }
-  Node *temp;
-  temp = first->next;
-  first->next = temp->next;
-  temp->next->prev = first;
-  frame_id_t ans = temp->val;
-  *frame_id = ans;
-  mapIn.erase(ans);
-  size--;
-  delete temp;
-  lru_latchs.unlock();
-  return true;
+
+  auto f = lst.front();
+  lst.pop_front();
+
+  auto hash_it = hash.find(f);
+  if (hash_it != hash.end()) {
+    hash.erase(hash_it);
+    *frame_id = f;
+    return true;
+  }
+
+  return false;
 }
 
 void LRUReplacer::Pin(frame_id_t frame_id) {
-  lru_latchs.lock();
-  Node *temp;
-  Node *newOne;
-  if (mapIn.count(frame_id) == 0) {
-    lru_latchs.unlock();
-    return;
+  const std::lock_guard<mutex_t> guard(mutex);
+
+  auto hash_it = hash.find(frame_id);
+  if (hash_it != hash.end()) {
+    lst.erase(hash_it->second);
+    hash.erase(hash_it);
   }
-  temp = mapIn[frame_id];
-  newOne = temp->next;        // end
-  newOne->prev = temp->prev;  // end->prev=9
-  temp->prev->next = newOne;  // 9->next=end
-  size--;
-  mapIn.erase(frame_id);
-  delete temp;
-  lru_latchs.unlock();
 }
 
 void LRUReplacer::Unpin(frame_id_t frame_id) {
-  lru_latchs.lock();
-  Node *newOne;
-  Node *temp = new Node();
-  if (mapIn.count(frame_id) != 0) {
-    lru_latchs.unlock();
-    return;
-  }
-  if (size < num_pages) {
-    newOne = end->prev;
-    newOne->next = temp;
-    temp->next = end;
-    temp->prev = newOne;
-    temp->val = frame_id;
-    end->prev = temp;
-    size++;
-    mapIn[frame_id] = temp;
-    lru_latchs.unlock();
+  const std::lock_guard<mutex_t> guard(mutex);
 
+  if (hash.size() >= capacity) {
     return;
   }
-  newOne = first->next;
-  first->next = temp;
-  temp->next = newOne;
-  temp->prev = first;
-  newOne->prev = temp;
-  temp->val = frame_id;
-  mapIn[frame_id] = temp;
-  size++;
-  lru_latchs.unlock();
+
+  auto hash_it = hash.find(frame_id);
+  if (hash_it != hash.end()) {
+    return;
+  }
+
+  lst.push_back(frame_id);
+  hash.emplace(frame_id, std::prev(lst.end(), 1));
 }
 
-size_t LRUReplacer::Size() { return size; }
+size_t LRUReplacer::Size() {
+  const std::lock_guard<mutex_t> guard(mutex);
+
+  return hash.size();
+}
 
 }  // namespace bustub

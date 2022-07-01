@@ -1,6 +1,6 @@
 /**
- * index_iterator.cpp
- */
+* index_iterator.cpp
+*/
 #include <cassert>
 
 #include "storage/index/index_iterator.h"
@@ -8,45 +8,54 @@
 namespace bustub {
 
 /*
- * NOTE: you can change the destructor/constructor method here
- * set your own input parameters
- */
+* NOTE: you can change the destructor/constructor method here
+* set your own input parameters
+*/
 INDEX_TEMPLATE_ARGUMENTS
-INDEXITERATOR_TYPE::IndexIterator(BufferPoolManager *bpm,BPlusTreeLeafPage<KeyType, ValueType, KeyComparator> *leaf,int index) {
-  this->index= index;
-  this->bpm=bpm;
-  this->leaf=leaf;
-  //itr=ee.begin();
+INDEXITERATOR_TYPE::IndexIterator(BufferPoolManager *bpm, Page *page, int idx)
+   : buffer_pool_manager_(bpm), page(page), idx(idx) {
+ leaf = reinterpret_cast<LeafPage *>(page->GetData());
 }
 
 INDEX_TEMPLATE_ARGUMENTS
 INDEXITERATOR_TYPE::~IndexIterator() {
-
+ page->RUnlatch();
+ buffer_pool_manager_->UnpinPage(page->GetPageId(), false);
 }
 
 INDEX_TEMPLATE_ARGUMENTS
-bool INDEXITERATOR_TYPE::isEnd() {
-  if (this->leaf== nullptr|| this->index== this->leaf->GetMaxSize()){
-    return true;
-  }
-  return false;
-}
+bool INDEXITERATOR_TYPE::isEnd() { return leaf->GetNextPageId() == INVALID_PAGE_ID && idx == leaf->GetSize(); }
 
 INDEX_TEMPLATE_ARGUMENTS
-const MappingType &INDEXITERATOR_TYPE::operator*() {
-    return leaf->GetItem(this->index);
-}
+const MappingType &INDEXITERATOR_TYPE::operator*() { return leaf->GetItem(idx); }
 
 INDEX_TEMPLATE_ARGUMENTS
 INDEXITERATOR_TYPE &INDEXITERATOR_TYPE::operator++() {
-  this->index++;
-  if (this->index>=this->leaf->GetSize()){
-    auto next_id = leaf->GetNextPageId();
-    auto next_page = reinterpret_cast<BPlusTreeLeafPage<KeyType, ValueType, KeyComparator> *>(this->bpm->FetchPage(next_id)->GetData());
-    bpm->UnpinPage(leaf->GetPageId(), false);
-    this->leaf=next_page;
-  }
-  return *this;
+ if (idx == leaf->GetSize() - 1 && leaf->GetNextPageId() != INVALID_PAGE_ID) {
+   auto next_page = buffer_pool_manager_->FetchPage(leaf->GetNextPageId());
+
+   next_page->RLatch();
+   page->RUnlatch();
+   buffer_pool_manager_->UnpinPage(page->GetPageId(), false);
+
+   page = next_page;
+   leaf = reinterpret_cast<LeafPage *>(page->GetData());
+   idx = 0;
+ } else {
+   idx++;
+ }
+
+ return *this;
+}
+
+INDEX_TEMPLATE_ARGUMENTS
+bool INDEXITERATOR_TYPE::operator==(const IndexIterator &itr) const {
+ return leaf->GetPageId() == itr.leaf->GetPageId() && idx == itr.idx;
+}
+
+INDEX_TEMPLATE_ARGUMENTS
+bool INDEXITERATOR_TYPE::operator!=(const IndexIterator &itr) const {
+ return !(leaf->GetPageId() == itr.leaf->GetPageId() && idx == itr.idx);
 }
 
 template class IndexIterator<GenericKey<4>, RID, GenericComparator<4>>;

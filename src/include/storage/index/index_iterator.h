@@ -13,17 +13,21 @@
  * For range scan of b+ tree
  */
 #pragma once
+#include "buffer/buffer_pool_manager.h"
 #include "storage/page/b_plus_tree_leaf_page.h"
-using namespace std;
+#include "storage/page/page.h"
+
 namespace bustub {
 
 #define INDEXITERATOR_TYPE IndexIterator<KeyType, ValueType, KeyComparator>
 
 INDEX_TEMPLATE_ARGUMENTS
 class IndexIterator {
+  using LeafPage = BPlusTreeLeafPage<KeyType, ValueType, KeyComparator>;
+
  public:
   // you may define your own constructor based on your member variables
-  IndexIterator(BufferPoolManager *bpm,BPlusTreeLeafPage<KeyType, ValueType, KeyComparator> *leaf,int index);
+  IndexIterator(BufferPoolManager *bpm, Page *page, int idx = 0);
   ~IndexIterator();
 
   bool isEnd();
@@ -32,16 +36,16 @@ class IndexIterator {
 
   IndexIterator &operator++();
 
-  bool operator==(const IndexIterator &itr) const { return this->leaf==itr.leaf&&this->index==this->index&&this->bpm==itr.bpm; }
+  bool operator==(const IndexIterator &itr) const;
 
-  bool operator!=(const IndexIterator &itr) const { return !(this->leaf!=itr.leaf||this->index!=this->index||this->bpm!=itr.bpm); }
+  bool operator!=(const IndexIterator &itr) const;
 
  private:
-  int index;
-  BufferPoolManager *bpm;
-  BPlusTreeLeafPage<KeyType, ValueType, KeyComparator> *leaf;
-  //iterator itr;
+  // add your own private member variables here
+  BufferPoolManager *buffer_pool_manager_;
+  Page *page;
+  LeafPage *leaf = nullptr;
+  int idx = 0;
 };
 
 }  // namespace bustub
-

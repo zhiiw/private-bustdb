@@ -34,6 +34,7 @@ enum class IndexPageType { INVALID_INDEX_PAGE = 0, LEAF_PAGE, INTERNAL_PAGE };
  * contains information shared by both leaf page and internal page.
  *
  * Header format (size in byte, 24 bytes in total):
+ * ----------------------------------------------------------------------------
  * | PageType (4) | LSN (4) | CurrentSize (4) | MaxSize (4) |
  * ----------------------------------------------------------------------------
  * | ParentPageId (4) | PageId(4) |
@@ -44,6 +45,7 @@ class BPlusTreePage {
   bool IsLeafPage() const;
   bool IsRootPage() const;
   void SetPageType(IndexPageType page_type);
+  IndexPageType GetPageType() const;
 
   int GetSize() const;
   void SetSize(int size);
