@@ -226,9 +226,10 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::CopyLastFrom(const MappingType &item) {
  */
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_LEAF_PAGE_TYPE::MoveLastToFrontOf(BPlusTreeLeafPage *recipient) {
-  int size = this->GetSize();
-  recipient->CopyFirstFrom(this->array[size-1]);
-  this->SetSize(size-1);
+  auto last_item = GetItem(GetSize() - 1);
+  IncreaseSize(-1);
+
+  recipient->CopyFirstFrom(last_item);
 }
 
 /*
@@ -236,11 +237,9 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::MoveLastToFrontOf(BPlusTreeLeafPage *recipient)
  */
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_LEAF_PAGE_TYPE::CopyFirstFrom(const MappingType &item) {
-  for(int i=this->GetSize()-1;i>=0;i--){
-    this->array[i+1]=this->array[i];
-  }
-  this->array[0] = item;
-  this->SetSize(this->GetSize()+1);
+  std::move_backward(array, array + GetSize(), array + GetSize() + 1);
+  *array = item;
+  IncreaseSize(1);
 }
 
 template class BPlusTreeLeafPage<GenericKey<4>, RID, GenericComparator<4>>;
