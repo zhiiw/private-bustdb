@@ -34,11 +34,13 @@ bool SeqScanExecutor::Next(Tuple *tuple, RID *rid) {
   } while (plan_->GetPredicate() != nullptr &&
            !plan_->GetPredicate()->Evaluate(&raw_tuple, &(table_info_->schema_)).GetAs<bool>());
   std::vector<Value> ee;
-  std::transform(plan_->OutputSchema()->GetColumns().begin(),plan_->OutputSchema()->GetColumns().end(), std::back_inserter(ee), [](const Value &v) {
-    return v;
+  std::transform(plan_->OutputSchema()->GetColumns().begin(),plan_->OutputSchema()->GetColumns().end(), std::back_inserter(ee), [&raw_tuple,&table_info = table_info_](const Column &col) {
+    return col.GetExpr()->Evaluate(&raw_tuple,&table_info->schema_);
+
   });
   *rid = raw_tuple.GetRid();
   *tuple ={ee,plan_->OutputSchema()};
+  return true;
 }
 
 }  // namespace bustub
